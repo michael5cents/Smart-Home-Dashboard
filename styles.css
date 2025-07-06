@@ -1,0 +1,2974 @@
+/* Smart Home Dashboard Styles - v3.0.0 - Tab System */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.connected {
+    background: #51cf66;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.tab-btn.active {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-weight: 600;
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Main Content Layout */
+.main-content {
+    margin-bottom: 30px;
+}
+
+/* Content Grid Layout - Optimized for single tab display */
+.tab-content.active#climate-content,
+.tab-content.active#security-content,
+.tab-content.active#sprinkler-content,
+.tab-content.active#creditcard-content,
+.tab-content.active#theater-content {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: 1fr;
+    max-width: 100%;
+}
+
+/* Card Styles */
+.card {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+}
+
+.card.compact {
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.card.primary {
+    border: 2px solid #4299e1;
+    box-shadow: 0 10px 30px rgba(66, 153, 225, 0.2);
+}
+
+/* Thermostat Card */
+.thermostat-card {
+    text-align: center;
+    padding: 15px;
+}
+
+.thermostat-card h2 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    font-size: 0.75rem;
+}
+
+.temp-display {
+    margin: 15px 0;
+}
+
+.current-temp {
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 5px;
+}
+
+.target-temp {
+    font-size: 0.6rem;
+    color: #718096;
+}
+
+.temp-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.temp-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: #4299e1;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.temp-btn:hover {
+    background: #3182ce;
+    transform: scale(1.1);
+}
+
+.setpoints {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.setpoint {
+    text-align: center;
+}
+
+.setpoint label {
+    display: block;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 5px;
+    font-size: 0.7rem;
+}
+
+.setpoint-controls {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.setpoint-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #4a5568;
+    font-size: 0.6rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.setpoint-btn:hover {
+    background: #cbd5e0;
+    transform: scale(1.1);
+}
+
+.mode-controls, .fan-controls {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+
+.mode-btn, .fan-btn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #4a5568;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.7rem;
+}
+
+.mode-btn:hover, .fan-btn:hover {
+    background: #cbd5e0;
+    transform: translateY(-2px);
+}
+
+.mode-btn.active, .fan-btn.active {
+    background: #4299e1;
+    color: white;
+}
+
+/* Compact Grid for sensors and weather */
+.compact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Sensor Cards */
+.sensor-card {
+    text-align: center;
+}
+
+.sensor-card h3 {
+    color: #4a5568;
+    margin-bottom: 7px;
+    font-size: 0.6rem;
+}
+
+.sensor-temp {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 5px;
+}
+
+.sensor-status {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.45rem;
+    color: #718096;
+}
+
+/* Weather Card */
+.weather-card {
+    text-align: center;
+}
+
+.weather-card h2 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    font-size: 0.75rem;
+}
+
+.weather-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.weather-temp {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.weather-condition {
+    font-size: 0.7rem;
+    color: #4a5568;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.weather-detail {
+    text-align: center;
+}
+
+.weather-label {
+    display: block;
+    font-size: 0.42rem;
+    color: #718096;
+    font-weight: 600;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+}
+
+.weather-detail span:last-child {
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.weather-update {
+    font-size: 0.45rem;
+    color: #718096;
+    margin-top: 7px;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.stat-card h3 {
+    color: #718096;
+    font-size: 0.45rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+/* Lock Cards */
+.locks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.lock-card {
+    text-align: center;
+}
+
+.lock-card h3 {
+    color: #4a5568;
+    margin-bottom: 7px;
+    font-size: 0.6rem;
+}
+
+.lock-status-display {
+    margin: 10px 0;
+}
+
+.lock-status {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.lock-status.locked {
+    color: #e53e3e;
+}
+
+.lock-status.unlocked {
+    color: #38a169;
+}
+
+.lock-battery {
+    font-size: 0.45rem;
+    color: #718096;
+}
+
+.lock-controls {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.lock-btn, .unlock-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.6rem;
+}
+
+.lock-btn {
+    background: #e53e3e;
+    color: white;
+}
+
+.lock-btn:hover {
+    background: #c53030;
+    transform: translateY(-2px);
+}
+
+.unlock-btn {
+    background: #38a169;
+    color: white;
+}
+
+.unlock-btn:hover {
+    background: #2f855a;
+    transform: translateY(-2px);
+}
+
+/* Echo Speaks Card */
+.echo-card h2 {
+    color: #4a5568;
+    margin-bottom: 7px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.echo-info {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #718096;
+    font-size: 0.45rem;
+}
+
+.echo-controls {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.echo-btn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    background: #4299e1;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.6rem;
+}
+
+.echo-btn:hover {
+    background: #3182ce;
+    transform: translateY(-2px);
+}
+
+.custom-command-section {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+}
+
+.custom-command-section h3 {
+    margin: 0 0 7px 0;
+    color: #4a5568;
+    font-size: 0.55rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.custom-command-input {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+#custom-command-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: #f7fafc;
+    color: #2d3748;
+    font-size: 16px;
+    min-height: 20px;
+    transition: all 0.3s ease;
+}
+
+#custom-command-input:focus {
+    outline: none;
+    border-color: #4299e1;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+#custom-command-input::placeholder {
+    color: #a0aec0;
+}
+
+#send-custom-command-btn {
+    min-width: 70px;
+    flex-shrink: 0;
+}
+
+/* Actions Card */
+.actions-card h2 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background: #48bb78;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.6rem;
+}
+
+.action-btn:hover {
+    background: #38a169;
+    transform: translateY(-2px);
+}
+
+/* Sprinkler System Styles */
+.sprinkler-zones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.sprinkler-card {
+    text-align: center;
+}
+
+.sprinkler-card h3 {
+    color: #4a5568;
+    margin-bottom: 7px;
+    font-size: 0.6rem;
+}
+
+.sprinkler-status-display {
+    margin: 10px 0;
+}
+
+.sprinkler-status {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #2d3748;
+}
+
+.sprinkler-status.running {
+    color: #3182ce;
+}
+
+.sprinkler-status.ready {
+    color: #38a169;
+}
+
+.sprinkler-timer {
+    font-size: 0.45rem;
+    color: #718096;
+}
+
+.sprinkler-controls {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.sprinkler-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.6rem;
+}
+
+.start-btn {
+    background: #3182ce;
+    color: white;
+}
+
+.start-btn:hover {
+    background: #2c5aa0;
+    transform: translateY(-2px);
+}
+
+.stop-btn {
+    background: #e53e3e;
+    color: white;
+}
+
+.stop-btn:hover {
+    background: #c53030;
+    transform: translateY(-2px);
+}
+
+.duration-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 0.5rem;
+    color: #4a5568;
+}
+
+.duration-select {
+    padding: 2px 4px;
+    border: 1px solid #e2e8f0;
+    border-radius: 3px;
+    background: #f7fafc;
+    color: #2d3748;
+    font-size: 0.5rem;
+    cursor: pointer;
+}
+
+.duration-select:focus {
+    outline: none;
+    border-color: #4299e1;
+    background: white;
+}
+
+/* Sprinkler System Controls */
+.sprinkler-system-card h2 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.system-status {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.system-info {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.5rem;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+.system-controls {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.system-btn {
+    padding: 5px 8px;
+    border: none;
+    border-radius: 4px;
+    background: #4299e1;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.55rem;
+}
+
+.system-btn:hover {
+    background: #3182ce;
+    transform: translateY(-2px);
+}
+
+.system-btn.wyze-btn {
+    background: #ff6b35;
+    border: 2px solid #e55a2b;
+}
+
+.system-btn.wyze-btn:hover {
+    background: #e55a2b;
+    border-color: #cc4f24;
+    transform: translateY(-2px) scale(1.05);
+}
+
+.quick-actions {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+}
+
+.quick-actions h3 {
+    margin: 0 0 6px 0;
+    color: #4a5568;
+    font-size: 0.55rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.quick-action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.quick-btn {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    background: #48bb78;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.5rem;
+}
+
+.quick-btn:hover {
+    background: #38a169;
+    transform: translateY(-2px);
+}
+
+/* Schedule Card */
+.schedule-card h2 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.schedule-info {
+    text-align: center;
+}
+
+.next-run {
+    font-size: 0.55rem;
+    color: #4a5568;
+    margin-bottom: 8px;
+}
+
+.schedule-controls {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.schedule-btn {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.5rem;
+}
+
+.schedule-btn:nth-child(1) {
+    background: #38a169;
+    color: white;
+}
+
+.schedule-btn:nth-child(1):hover {
+    background: #2f855a;
+    transform: translateY(-2px);
+}
+
+.schedule-btn:nth-child(2) {
+    background: #e53e3e;
+    color: white;
+}
+
+.schedule-btn:nth-child(2):hover {
+    background: #c53030;
+    transform: translateY(-2px);
+}
+
+.schedule-btn:nth-child(3) {
+    background: #ed8936;
+    color: white;
+}
+
+.schedule-btn:nth-child(3):hover {
+    background: #dd6b20;
+    transform: translateY(-2px);
+}
+
+/* Credit Card Styles */
+.creditcard-summary-card {
+    text-align: center;
+    padding: 15px;
+}
+
+.creditcard-summary-card h2 {
+    color: #4a5568;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.creditcard-totals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.total-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.total-label {
+    font-size: 0.5rem;
+    color: #718096;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+    font-weight: 600;
+}
+
+.total-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.creditcard-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.cc-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    background: #4299e1;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.65rem;
+}
+
+.cc-btn:hover {
+    background: #3182ce;
+    transform: translateY(-2px);
+}
+
+/* Credit Card Alerts */
+.creditcard-alerts-card h3 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 0.7rem;
+}
+
+.alerts-container {
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.alert-item {
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    font-size: 0.55rem;
+    text-align: center;
+}
+
+.alert-item.warning {
+    background: #fed7d7;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+}
+
+.alert-item.overdue {
+    background: #fbb6ce;
+    color: #97266d;
+    border: 1px solid #f687b3;
+}
+
+.alert-item.info {
+    background: #bee3f8;
+    color: #2c5aa0;
+    border: 1px solid #90cdf4;
+}
+
+.alert-text {
+    color: #718096;
+}
+
+/* Credit Card Grid */
+.creditcard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.creditcard-item {
+    background: white;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-left: 4px solid #4299e1;
+    transition: all 0.3s ease;
+}
+
+.creditcard-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.creditcard-item.overdue {
+    border-left-color: #e53e3e;
+}
+
+.creditcard-item.warning {
+    border-left-color: #ed8936;
+}
+
+.cc-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cc-card-name {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.cc-card-type {
+    font-size: 0.45rem;
+    color: #718096;
+    background: #f7fafc;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.cc-card-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.cc-detail {
+    text-align: center;
+}
+
+.cc-detail-label {
+    font-size: 0.4rem;
+    color: #718096;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+}
+
+.cc-detail-value {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.cc-due-date {
+    text-align: center;
+    font-size: 0.5rem;
+    color: #4a5568;
+    margin-bottom: 5px;
+}
+
+.cc-due-date.overdue {
+    color: #e53e3e;
+    font-weight: 700;
+}
+
+.cc-due-date.warning {
+    color: #ed8936;
+    font-weight: 600;
+}
+
+.cc-card-actions {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.cc-card-btn {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    background: #4299e1;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.45rem;
+}
+
+.cc-card-btn:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+}
+
+/* Credit Card Statistics */
+.creditcard-stats-card h3 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 0.7rem;
+}
+
+.creditcard-stats-card .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+}
+
+.creditcard-stats-card .stat-card h4 {
+    color: #718096;
+    font-size: 0.4rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+}
+
+.creditcard-stats-card .stat-value {
+    font-size: 0.8rem;
+}
+
+.utilization-bar {
+    width: 100%;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.utilization-fill {
+    height: 100%;
+    background: #48bb78;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.utilization-fill.warning {
+    background: #ed8936;
+}
+
+.utilization-fill.danger {
+    background: #e53e3e;
+}
+
+/* Credit Card Actions */
+.creditcard-actions-card h3 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 0.7rem;
+}
+
+.cc-action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background: #48bb78;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.6rem;
+}
+
+.cc-action-btn:hover {
+    background: #38a169;
+    transform: translateY(-2px);
+}
+
+.cc-action-btn:nth-child(1) {
+    background: #38a169;
+}
+
+.cc-action-btn:nth-child(2) {
+    background: #4299e1;
+}
+
+.cc-action-btn:nth-child(3) {
+    background: #9f7aea;
+}
+
+.cc-action-btn:nth-child(4) {
+    background: #ed8936;
+}
+
+/* Camera System Styles */
+.camera-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.camera-card {
+    text-align: center;
+}
+
+.camera-card h3 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    font-size: 0.7rem;
+}
+
+.camera-display {
+    margin: 10px 0;
+}
+
+.camera-snapshot {
+    width: 100%;
+    height: 120px;
+    background: #f7fafc;
+    border: 2px dashed #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.camera-snapshot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.camera-placeholder {
+    color: #a0aec0;
+    font-size: 0.6rem;
+    font-weight: 600;
+}
+
+.camera-status {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.45rem;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+.camera-controls {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.camera-btn {
+    padding: 5px 8px;
+    border: none;
+    border-radius: 4px;
+    background: #4299e1;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.5rem;
+}
+
+.camera-btn:hover {
+    background: #3182ce;
+    transform: translateY(-2px);
+}
+
+/* Camera System Controls */
+.camera-system-card h2 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.system-status {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.system-info {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.5rem;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+.system-controls {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.recording-controls {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+}
+
+.recording-controls h3 {
+    margin: 0 0 6px 0;
+    color: #4a5568;
+    font-size: 0.55rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.recording-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.record-btn {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.5rem;
+}
+
+.record-btn:nth-child(1) {
+    background: #e53e3e;
+    color: white;
+}
+
+.record-btn:nth-child(1):hover {
+    background: #c53030;
+    transform: translateY(-2px);
+}
+
+.record-btn:nth-child(2) {
+    background: #718096;
+    color: white;
+}
+
+.record-btn:nth-child(2):hover {
+    background: #4a5568;
+    transform: translateY(-2px);
+}
+
+.record-btn:nth-child(3) {
+    background: #ed8936;
+    color: white;
+}
+
+.record-btn:nth-child(3):hover {
+    background: #dd6b20;
+    transform: translateY(-2px);
+}
+
+/* Camera Settings */
+.camera-settings-card h2 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.settings-info {
+    text-align: center;
+}
+
+.network-settings h3 {
+    margin: 0 0 8px 0;
+    color: #4a5568;
+    font-size: 0.55rem;
+    font-weight: 600;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.5rem;
+    color: #718096;
+}
+
+.setting-row label {
+    font-weight: 600;
+}
+
+.setting-row span {
+    color: #2d3748;
+    font-weight: 700;
+}
+
+.settings-controls {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.settings-btn {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    background: #4299e1;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.5rem;
+}
+
+.settings-btn:hover {
+    background: #3182ce;
+    transform: translateY(-2px);
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    color: white;
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+/* Lighting Controls */
+.lighting-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+    align-items: start;
+}
+
+.light-card {
+    text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.light-card h3 {
+    color: #4a5568;
+    margin-bottom: 12px;
+    font-size: 0.75rem;
+    position: sticky;
+    top: 0;
+    background: white;
+    padding: 10px 0;
+    z-index: 10;
+}
+
+.lights-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 10px;
+    max-height: none;
+}
+
+/* Kitchen Sink Lights specific styling */
+#kitchen-lights {
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+#kitchen-lights .lights-container {
+    padding-bottom: 20px;
+}
+
+.light-control {
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+}
+
+.light-control h4 {
+    color: #4a5568;
+    margin-bottom: 8px;
+    font-size: 0.65rem;
+}
+
+.light-status {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+.light-status.on {
+    color: #38a169;
+}
+
+.light-status.off {
+    color: #e53e3e;
+}
+
+.light-controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.light-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.6rem;
+}
+
+.light-btn.on-btn {
+    background: #38a169;
+    color: white;
+}
+
+.light-btn.off-btn {
+    background: #e53e3e;
+    color: white;
+}
+
+.light-btn:hover {
+    transform: translateY(-2px);
+}
+
+.light-btn.on-btn:hover {
+    background: #2f855a;
+}
+
+.light-btn.off-btn:hover {
+    background: #c53030;
+}
+
+/* Group controls styling */
+.group-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.light-btn.group-btn {
+    flex: 1;
+    max-width: 120px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.brightness-control {
+    text-align: center;
+}
+
+/* Color control styling */
+.color-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 0.7rem;
+}
+
+.color-control label {
+    font-size: 0.65rem;
+    color: #cbd5e0;
+    min-width: 35px;
+}
+
+.color-select {
+    flex: 1;
+    padding: 3px 6px;
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    min-height: 24px;
+}
+
+.color-select:focus {
+    outline: none;
+    border-color: #63b3ed;
+}
+
+.color-select option {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+/* Temperature select styling */
+.temp-select {
+    flex: 1;
+    padding: 3px 6px;
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    min-height: 24px;
+}
+
+.temp-select:focus {
+    outline: none;
+    border-color: #63b3ed;
+}
+
+.temp-select option {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+/* Home Theater Control Styling */
+.theater-card {
+    padding: 20px;
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    color: #e2e8f0;
+    border-radius: 12px;
+    border: 1px solid #4a5568;
+}
+
+.theater-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.theater-section h3 {
+    margin: 0 0 15px 0;
+    color: #63b3ed;
+    font-size: 1.1em;
+}
+
+.theater-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.theater-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    min-width: 120px;
+}
+
+.theater-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.power-btn {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+}
+
+.power-btn:hover {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+}
+
+.volume-btn, .mute-btn {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+}
+
+.volume-btn:hover, .mute-btn:hover {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+}
+
+.input-btn {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    color: white;
+}
+
+.input-btn:hover {
+    background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%);
+}
+
+.surround-btn {
+    background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+    color: white;
+}
+
+.surround-btn:hover {
+    background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+}
+
+.refresh-btn {
+    background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
+    color: white;
+}
+
+.refresh-btn:hover {
+    background: linear-gradient(135deg, #319795 0%, #2c7a7b 100%);
+}
+
+.volume-controls, .input-buttons, .surround-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.volume-slider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.volume-slider input[type="range"] {
+    flex: 1;
+    max-width: 300px;
+}
+
+.status-display, .volume-display {
+    font-size: 0.9em;
+    color: #cbd5e0;
+    margin-top: 10px;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-label {
+    font-weight: bold;
+    color: #a0aec0;
+}
+
+.status-value {
+    color: #63b3ed;
+    font-weight: bold;
+}
+
+/* CEC Blu-ray Controls */
+.cec-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.cec-playback, .cec-extra {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cec-navigation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.nav-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.cec-btn, .nav-btn {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+    min-width: 80px;
+    padding: 8px 12px;
+}
+
+.cec-btn:hover, .nav-btn:hover {
+    background: linear-gradient(135deg, #c53030 0%, #9c2c2c 100%);
+}
+
+.nav-btn {
+    width: 60px;
+    height: 50px;
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-btn.center {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+}
+
+.nav-btn.center:hover {
+    background: linear-gradient(135deg, #2f855a 0%, #276749 100%);
+}
+
+/* Zidoo Controls */
+.zidoo-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.zidoo-playback, .zidoo-extra {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.zidoo-navigation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.zidoo-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    min-width: 80px;
+    padding: 8px 12px;
+}
+
+.zidoo-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #6b46c1 100%);
+}
+
+/* Zidoo Web Interface Button */
+.zidoo-web-control {
+    margin-bottom: 15px;
+}
+
+.zidoo-web-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.zidoo-web-btn:hover {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+/* Anthem MRX40 Web Interface Button */
+.anthem-web-control {
+    text-align: center;
+    padding: 20px;
+}
+
+.anthem-web-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+    text-decoration: none;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    margin-bottom: 15px;
+}
+
+.anthem-web-btn:hover {
+    background: linear-gradient(135deg, #c53030 0%, #9c2626 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(229, 62, 62, 0.4);
+}
+
+.anthem-description {
+    color: #a0aec0;
+    font-size: 14px;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Kasa Smart Plug Controls */
+.kasa-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.kasa-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.kasa-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.kasa-btn {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    min-width: 100px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.kasa-btn:hover {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    transform: translateY(-1px);
+}
+
+.kasa-btn:active {
+    transform: translateY(0);
+}
+
+.status-on {
+    color: #48bb78;
+    font-weight: 600;
+}
+
+.status-off {
+    color: #f56565;
+    font-weight: 600;
+}
+
+/* Master Bedroom Switch Controls */
+.power-switch-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.switch-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.switch-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.switch-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    min-width: 100px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.switch-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #6b46c1 100%);
+    transform: translateY(-1px);
+}
+
+.switch-btn:active {
+    transform: translateY(0);
+}
+
+/* Volume Preview Styling */
+.volume-preview {
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    text-align: center;
+}
+
+.volume-preview span:first-child {
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+#volume-preview-value {
+    color: #4299e1;
+    font-weight: 600;
+    font-size: 16px;
+    margin-left: 8px;
+}
+
+.brightness-control label {
+    display: block;
+    font-size: 0.55rem;
+    color: #718096;
+    margin-bottom: 4px;
+}
+
+.brightness-control input[type="range"] {
+    width: 100%;
+    margin: 8px 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #e2e8f0;
+    height: 4px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.brightness-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #4299e1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.brightness-control input[type="range"]::-webkit-slider-thumb:hover {
+    background: #3182ce;
+    transform: scale(1.1);
+}
+
+.brightness-value {
+    display: inline-block;
+    font-size: 0.55rem;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+/* Color Temperature Control */
+.color-temp-control {
+    text-align: center;
+    margin-top: 12px;
+}
+
+.color-temp-control label {
+    display: block;
+    font-size: 0.55rem;
+    color: #718096;
+    margin-bottom: 4px;
+}
+
+.color-temp-control input[type="range"] {
+    width: 100%;
+    margin: 8px 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #ff9500 0%, #ffffff 50%, #87ceeb 100%);
+    height: 4px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.color-temp-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #f56500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.color-temp-control input[type="range"]::-webkit-slider-thumb:hover {
+    background: #dd5500;
+    transform: scale(1.1);
+}
+
+.color-temp-value {
+    display: inline-block;
+    font-size: 0.55rem;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+/* Color Control */
+.color-control {
+    text-align: center;
+    margin-top: 12px;
+}
+
+.color-control > label {
+    display: block;
+    font-size: 0.55rem;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+.color-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.color-input-group {
+    text-align: center;
+}
+
+.color-input-group label {
+    display: block;
+    font-size: 0.5rem;
+    color: #718096;
+    margin-bottom: 4px;
+}
+
+.color-input-group input[type="range"] {
+    width: 100%;
+    margin: 6px 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #e2e8f0;
+    height: 4px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.color-input-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #9f7aea;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.color-input-group input[type="range"]::-webkit-slider-thumb:hover {
+    background: #805ad5;
+    transform: scale(1.1);
+}
+
+.color-value {
+    font-size: 0.5rem;
+    color: #4a5568;
+    font-weight: 600;
+    display: block;
+    margin-top: 2px;
+}
+
+.color-input-group small {
+    display: block;
+    font-size: 0.45rem;
+    color: #a0aec0;
+    margin-top: 4px;
+    line-height: 1.2;
+    font-style: italic;
+}
+
+.color-input-group input[type="range"]#sink1-hue,
+.color-input-group input[type="range"]#sink2-hue {
+    background: linear-gradient(to right, 
+        #ff0000 0%, #ff8000 14%, #ffff00 28%, 
+        #80ff00 42%, #00ff00 57%, #00ff80 71%, 
+        #00ffff 85%, #0080ff 100%);
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.color-input-group input[type="range"]#sink1-hue::-webkit-slider-thumb,
+.color-input-group input[type="range"]#sink2-hue::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #333;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.color-input-group input[type="range"]#sink1-hue::-moz-range-thumb,
+.color-input-group input[type="range"]#sink2-hue::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #333;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.color-input-group input[type="range"]#sink1-saturation,
+.color-input-group input[type="range"]#sink2-saturation {
+    background: linear-gradient(to right, #ffffff 0%, #ff0000 100%);
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.color-input-group input[type="range"]#sink1-saturation::-webkit-slider-thumb,
+.color-input-group input[type="range"]#sink2-saturation::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #333;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.color-input-group input[type="range"]#sink1-saturation::-moz-range-thumb,
+.color-input-group input[type="range"]#sink2-saturation::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #333;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Compact Color Controls */
+.color-inputs.compact {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.color-inputs.compact .color-input-group {
+    flex: 1;
+    min-width: 120px;
+}
+
+.color-inputs.compact .color-input-group label {
+    font-size: 0.8em;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.color-inputs.compact .color-value {
+    font-size: 0.75em;
+    margin-top: 2px;
+    display: block;
+}
+
+.color-inputs.compact input[type="range"] {
+    width: 100%;
+    margin: 4px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .compact-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    
+    .locks-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .tab-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .current-temp {
+        font-size: 3rem;
+    }
+    
+    .temp-controls {
+        gap: 15px;
+    }
+    
+    .temp-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.4rem;
+    }
+    
+    .setpoints {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .mode-controls, .fan-controls {
+        gap: 8px;
+    }
+    
+    .mode-btn, .fan-btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .compact-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .locks-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .custom-command-input {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    #send-custom-command-btn {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .weather-main {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .weather-temp {
+        font-size: 2.5rem;
+    }
+    
+    .weather-details {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .tab-navigation {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .tab-btn {
+        width: 200px;
+    }
+}
+
+/* Lighting Dashboard Styles */
+.lighting-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+.lighting-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.lighting-section h2 {
+    margin: 0 0 15px 0;
+    color: #495057;
+    font-size: 1.3em;
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 8px;
+}
+
+.lights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+/* Compact Light Cards */
+.light-card.compact {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
+}
+
+.light-card.compact h3 {
+    margin: 0 0 12px 0;
+    font-size: 1.1em;
+    color: #495057;
+}
+
+/* Dual Light Container (for Kitchen Sink) */
+.dual-light-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.light-control.mini {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.light-control.mini h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+/* Compact Controls */
+.compact-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.control-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 50px;
+    gap: 8px;
+    align-items: center;
+}
+
+.control-row label {
+    font-size: 0.8em;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.control-row input[type="range"] {
+    height: 4px;
+    background: #dee2e6;
+    border-radius: 2px;
+    outline: none;
+}
+
+.control-row span {
+    font-size: 0.8em;
+    color: #495057;
+    text-align: right;
+}
+
+/* Group Controls */
+.group-controls.mini {
+    background: #e3f2fd;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #bbdefb;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.group-controls.mini .mini-btn {
+    margin-right: 8px;
+}
+
+/* Group Brightness Controls */
+.group-brightness-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 4px;
+    border: 1px solid #90caf9;
+}
+
+.group-brightness-input {
+    width: 50px;
+    padding: 4px 6px;
+    border: 1px solid #90caf9;
+    border-radius: 3px;
+    font-size: 0.8em;
+    text-align: center;
+    background: white;
+}
+
+.group-brightness-input:focus {
+    outline: none;
+    border-color: #42a5f5;
+    background: white;
+    box-shadow: 0 0 0 2px rgba(66,165,245,0.25);
+}
+
+.group-brightness-control span {
+    font-size: 0.8em;
+    color: #1976d2;
+    font-weight: 500;
+}
+
+.group-set-btn {
+    padding: 4px 8px;
+    font-size: 0.7em;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.group-set-btn:hover {
+    background: #1565c0;
+}
+
+/* Individual Lights Grid */
+.individual-lights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.light-mini {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Master Bedroom lights need extra height for color controls */
+#master-bedroom-lights .light-mini {
+    min-height: 300px;
+    padding-bottom: 15px;
+}
+
+/* Ensure color controls have proper spacing and vertical layout */
+#master-bedroom-lights .color-control {
+    margin-bottom: 8px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+}
+
+#master-bedroom-lights .color-control label {
+    text-align: center;
+    min-width: auto;
+}
+
+#master-bedroom-lights .color-select {
+    margin-bottom: 4px;
+}
+
+.light-mini span {
+    display: block;
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.light-mini .light-status {
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.mini-controls {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.mini-btn {
+    padding: 4px 8px;
+    font-size: 0.7em;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.mini-btn.on-btn {
+    background: #28a745;
+    color: white;
+}
+
+.mini-btn.on-btn:hover {
+    background: #218838;
+}
+
+.mini-btn.off-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.mini-btn.off-btn:hover {
+    background: #c82333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .lights-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dual-light-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .individual-lights-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+    
+    .control-row {
+        grid-template-columns: 50px 1fr 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .lighting-section {
+        padding: 15px;
+    }
+    
+    .light-card.compact {
+        padding: 12px;
+    }
+    
+    .individual-lights-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Master Lighting Controls */
+.master-controls {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.master-controls h2 {
+    margin: 0 0 15px 0;
+    font-size: 1.4em;
+    color: white;
+    border-bottom: 2px solid rgba(255,255,255,0.3);
+    padding-bottom: 8px;
+}
+
+.master-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.master-btn {
+    padding: 12px 24px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 180px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.master-btn.on-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.master-btn.on-btn:hover {
+    background: linear-gradient(135deg, #218838, #1ba085);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.master-btn.off-btn {
+    background: linear-gradient(135deg, #dc3545, #fd7e14);
+    color: white;
+}
+
+.master-btn.off-btn:hover {
+    background: linear-gradient(135deg, #c82333, #e8650e);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.mini-btn.off-btn:hover {
+    background: #c82333;
+}
+
+/* Master Brightness Controls */
+.master-brightness-controls {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid rgba(255,255,255,0.3);
+}
+
+.master-brightness-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.master-brightness-row label {
+    color: white;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+.master-brightness-input {
+    width: 70px;
+    padding: 8px 10px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    font-size: 1em;
+    text-align: center;
+    background: rgba(255,255,255,0.9);
+    color: #495057;
+    font-weight: 500;
+}
+
+.master-brightness-input:focus {
+    outline: none;
+    border-color: rgba(255,255,255,0.8);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+}
+
+.master-brightness-row span {
+    color: white;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+.master-set-btn {
+    padding: 8px 16px;
+    font-size: 0.9em;
+    font-weight: bold;
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #212529;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.master-set-btn:hover {
+    background: linear-gradient(135deg, #e0a800, #e8650e);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* Brightness Controls for WiFi Lights */
+.brightness-control {
+    margin-top: 8px;
+    margin-bottom: 6px;
+    padding: 8px 6px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7em;
+    flex-shrink: 0;
+    min-height: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.brightness-control label {
+    color: #6c757d;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.brightness-input {
+    width: 50px;
+    padding: 2px 4px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    font-size: 0.7em;
+    text-align: center;
+}
+
+.brightness-input:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,.25);
+}
+
+.set-btn {
+    padding: 4px 8px;
+    font-size: 0.65em;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+    min-width: 35px;
+    margin-left: 2px;
+}
+
+.set-btn:hover {
+    background: #0056b3;
+}
+
+/* Credit Card styles */
+.credit-card-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.credit-card-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.credit-card-item.good {
+    border-left: 4px solid #4CAF50;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.card-header h4 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.card-type {
+    background: var(--accent-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.card-balance {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+.card-balance.good {
+    color: #4CAF50;
+}
+
+.card-details {
+    font-size: 0.9em;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    padding: 2px 0;
+}
+
+.detail-row span:first-child {
+    color: var(--text-muted);
+}
+
+.detail-row span:last-child {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.low-credit {
+    color: #e74c3c !important;
+    font-weight: bold !important;
+}
+
+.good-credit {
+    color: #4CAF50 !important;
+    font-weight: bold !important;
+}
+
+.due-amount {
+    color: #f39c12 !important;
+    font-weight: bold !important;
+}
+
+.due-amount.urgent {
+    color: #e74c3c !important;
+}
+
+.no-due {
+    color: #4CAF50 !important;
+}
+
+.due-soon {
+    color: #f39c12 !important;
+    font-weight: bold !important;
+}
+
+.due-urgent {
+    color: #e74c3c !important;
+    font-weight: bold !important;
+    animation: pulse 2s infinite;
+}
+
+.alert-item.urgent {
+    background-color: #ffebee;
+    border-left: 4px solid #e74c3c;
+    color: #c62828;
+}
+
+.alert-item.warning {
+    background-color: #fff8e1;
+    border-left: 4px solid #f39c12;
+    color: #e65100;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}

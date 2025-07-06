@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Backup files  
+*.backup.*
+
+# Sensitive data
+credit-card-data-*.json
+credit-cards-*.json
+credit-cards-*.csv
+creditcard/
+
+# Temporary files
+*.tmp
+
+# System files
+.DS_Store

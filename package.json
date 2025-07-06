@@ -1,0 +1,65 @@
+{
+  "name": "smart-home-dashboard",
+  "version": "2.0.0",
+  "description": "Smart Home Dashboard with Hubitat integration, real-time updates, and custom voice commands",
+  "main": "dashboard-server.js",
+  "scripts": {
+    "start": "node dashboard-server.js",
+    "dev": "node dashboard-server.js",
+    "test": "echo \"Dashboard v2.0.0 - Run 'npm start' to launch the server\"",
+    "backup": "mkdir -p backups/v2.0.0-$(date +%Y%m%d-%H%M%S) && cp -r *.js *.html *.css *.md *.json *.sh backups/v2.0.0-$(date +%Y%m%d-%H%M%S)/",
+    "restore": "echo \"To restore from backup, copy files from backups/v2.0.0-stable/ to current directory\""
+  },
+  "keywords": [
+    "smart-home",
+    "hubitat",
+    "dashboard",
+    "ecobee",
+    "thermostat",
+    "echo-speaks",
+    "alexa",
+    "home-automation",
+    "iot",
+    "real-time",
+    "sse",
+    "voice-control"
+  ],
+  "author": "Smart Home Dashboard Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7",
+    "tplink-smarthome-api": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "local"
+  },
+  "bugs": {
+    "url": "local-support"
+  },
+  "homepage": "http://localhost:8083",
+  "config": {
+    "port": "8083",
+    "hubitat_ip": "192.168.68.75",
+    "api_token": "configured"
+  },
+  "bundledDependencies": [],
+  "private": true,
+  "workspaces": [],
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "bundleDependencies": []
+}

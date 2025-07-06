@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Dashboard</title>
+    <link rel="stylesheet" href="styles.css?v=1.2">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🏠 Smart Home Dashboard</h1>
+            <div id="connection-status" class="connection-status">
+                <div class="status-dot"></div>
+                <span>Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" id="climate-tab">🌡️ Climate Control</button>
+            <button class="tab-btn" id="lighting-tab">💡 Lighting</button>
+            <button class="tab-btn" id="security-tab">🔐 Security & Controls</button>
+            <button class="tab-btn" id="camera-tab">📹 Security Cameras</button>
+            <button class="tab-btn" id="theater-tab">🎭 Home Theater</button>
+            <button class="tab-btn" id="master-bedroom-theater-tab">🏠 Master Bedroom Theater</button>
+            <button class="tab-btn" id="creditcard-tab">💳 Credit Cards</button>
+            <button class="tab-btn" id="radio-tab">📻 Radio Player</button>
+        </div>
+
+        <main class="main-content">
+            <!-- Climate Control Tab -->
+            <div class="tab-content active" id="climate-content">
+                    <!-- Thermostat Control -->
+                    <div class="card thermostat-card primary">
+                        <h2>🌡️ Living Room Thermostat</h2>
+                        <div class="temp-display">
+                            <div class="current-temp">
+                                <span id="thermostat-temp">--</span>°F
+                            </div>
+                            <div class="target-temp">
+                                Target: <span id="target-temp">--</span>°F
+                            </div>
+                        </div>
+                        
+                        <div class="temp-controls">
+                            <button id="temp-down" class="temp-btn">-</button>
+                            <button id="temp-up" class="temp-btn">+</button>
+                        </div>
+
+                        <div class="setpoints">
+                            <div class="setpoint">
+                                <label>Heat: <span id="heating-setpoint">--</span></label>
+                                <div class="setpoint-controls">
+                                    <button id="heat-down" class="setpoint-btn">-</button>
+                                    <button id="heat-up" class="setpoint-btn">+</button>
+                                </div>
+                            </div>
+                            <div class="setpoint">
+                                <label>Cool: <span id="cooling-setpoint">--</span></label>
+                                <div class="setpoint-controls">
+                                    <button id="cool-down" class="setpoint-btn">-</button>
+                                    <button id="cool-up" class="setpoint-btn">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mode-controls">
+                            <button class="mode-btn" data-mode="auto">Auto</button>
+                            <button class="mode-btn" data-mode="heat">Heat</button>
+                            <button class="mode-btn" data-mode="cool">Cool</button>
+                            <button class="mode-btn" data-mode="off">Off</button>
+                        </div>
+
+                        <div class="fan-controls">
+                            <button class="fan-btn" data-fan="auto">Fan Auto</button>
+                            <button class="fan-btn" data-fan="on">Fan On</button>
+                        </div>
+                    </div>
+
+                    <!-- Room Sensors & Weather in compact grid -->
+                    <div class="compact-grid">
+                        <div class="card sensor-card compact">
+                            <h3>🛏️ Master Bedroom</h3>
+                            <div class="sensor-temp" id="master-bedroom-temp">--°F</div>
+                            <div class="sensor-status">
+                                <span>Motion: <span id="master-bedroom-motion">--</span></span>
+                                <span>Status: <span id="master-bedroom-status">--</span></span>
+                            </div>
+                        </div>
+                        <div class="card sensor-card compact">
+                            <h3>🎮 Game Room</h3>
+                            <div class="sensor-temp" id="game-room-temp">--°F</div>
+                            <div class="sensor-status">
+                                <span>Motion: <span id="game-room-motion">--</span></span>
+                                <span>Status: <span id="game-room-status">--</span></span>
+                            </div>
+                        </div>
+                        <div class="card weather-card compact">
+                            <h2>🌤️ Weather - <span id="weather-location">--</span></h2>
+                            <div class="weather-main">
+                                <div class="weather-temp">
+                                    <span id="weather-temp">--</span>°F
+                                </div>
+                                <div class="weather-condition">
+                                    <span id="weather-condition">--</span>
+                                </div>
+                            </div>
+                            <div class="weather-details">
+                                <div class="weather-detail">
+                                    <span class="weather-label">Humidity:</span>
+                                    <span id="weather-humidity">--%</span>
+                                </div>
+                                <div class="weather-detail">
+                                    <span class="weather-label">Pressure:</span>
+                                    <span id="weather-pressure">-- hPa</span>
+                                </div>
+                                <div class="weather-detail">
+                                    <span class="weather-label">Wind:</span>
+                                    <span id="weather-wind">-- mph</span>
+                                </div>
+                                <div class="weather-detail">
+                                    <span class="weather-label">Clouds:</span>
+                                    <span id="weather-clouds">--%</span>
+                                </div>
+                            </div>
+                            <div class="weather-update">
+                                Last updated: <span id="weather-last-update">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Temperature</h3>
+                            <div class="stat-value" id="current-temp">--°F</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Humidity</h3>
+                            <div class="stat-value" id="humidity-value">--%</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Status</h3>
+                            <div class="stat-value" id="operating-state">--</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Fan</h3>
+                            <div class="stat-value" id="fan-mode">--</div>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Security & Controls Tab -->
+            <div class="tab-content" id="security-content">
+                    <!-- Smart Locks -->
+                    <div class="locks-grid">
+                        <div class="card lock-card compact" id="main-door">
+                            <h3>🚪 Main Door</h3>
+                            <div class="lock-status-display">
+                                <div class="lock-status" id="main-door-status">--</div>
+                                <div class="lock-battery">🔋 <span id="main-door-battery">--%</span></div>
+                            </div>
+                            <div class="lock-controls">
+                                <button class="lock-btn" id="front-lock-btn">🔒 Lock</button>
+                                <button class="unlock-btn" id="front-unlock-btn">🔓 Unlock</button>
+                            </div>
+                        </div>
+                        <div class="card lock-card compact" id="back-door">
+                            <h3>🚪 Back Door</h3>
+                            <div class="lock-status-display">
+                                <div class="lock-status" id="back-door-status">--</div>
+                                <div class="lock-battery">🔋 <span id="back-door-battery">--%</span></div>
+                            </div>
+                            <div class="lock-controls">
+                                <button class="lock-btn" id="back-lock-btn">🔒 Lock</button>
+                                <button class="unlock-btn" id="back-unlock-btn">🔓 Unlock</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Echo Speaks Controls -->
+                    <div class="card echo-card compact">
+                        <h2>🔊 Echo Speaks - Office Alexa</h2>
+                        <div class="echo-info">
+                            <p>Device: Echo - Office Show 8 (ID: 9)</p>
+                            <p>Hub: C8 - 192.168.68.75</p>
+                        </div>
+                        <div class="echo-controls">
+                            <button class="echo-btn" id="check-main-door-btn">🚪 Check Main Door</button>
+                            <button class="echo-btn" id="check-back-door-btn">🚪 Check Back Door</button>
+                        </div>
+                        <div class="custom-command-section">
+                            <h3>Custom Voice Command</h3>
+                            <div class="custom-command-input">
+                                <input type="text" id="custom-command-input" placeholder="Enter any command for Alexa..." maxlength="200">
+                                <button class="echo-btn" id="send-custom-command-btn">🎤 Send Command</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card actions-card compact">
+                        <h2>Quick Actions</h2>
+                        <div class="action-buttons">
+                            <button id="refresh-data" class="action-btn">🔄 Refresh</button>
+                            <button id="away-mode" class="action-btn">🏃 Away Mode</button>
+                            <button id="resume-program" class="action-btn">🏠 Resume Program</button>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Security Cameras Tab -->
+            <div class="tab-content" id="camera-content">
+                    <!-- Camera Grid -->
+                    <div class="camera-grid">
+                        <div class="card camera-card compact" id="camera-1">
+                            <h3>📹 Front Door Camera</h3>
+                            <div class="camera-display">
+                                <div class="camera-snapshot" id="camera-1-snapshot">
+                                    <img id="camera-1-image" src="" alt="Front Door Camera" style="display: none;">
+                                    <div class="camera-placeholder">📹 Camera Ready</div>
+                                </div>
+                                <div class="camera-status">
+                                    <span>Status: <span id="camera-1-status">Offline</span></span>
+                                    <span>Resolution: <span id="camera-1-resolution">1920x1080</span></span>
+                                </div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="camera-btn" id="camera-1-snapshot-btn">📸 Snapshot</button>
+                                <button class="camera-btn" id="camera-1-stream-btn">🎥 Live Stream</button>
+                            </div>
+                        </div>
+                        
+                        <div class="card camera-card compact" id="camera-2">
+                            <h3>📹 Back Yard Camera</h3>
+                            <div class="camera-display">
+                                <div class="camera-snapshot" id="camera-2-snapshot">
+                                    <img id="camera-2-image" src="" alt="Back Yard Camera" style="display: none;">
+                                    <div class="camera-placeholder">📹 Camera Ready</div>
+                                </div>
+                                <div class="camera-status">
+                                    <span>Status: <span id="camera-2-status">Offline</span></span>
+                                    <span>Resolution: <span id="camera-2-resolution">1920x1080</span></span>
+                                </div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="camera-btn" id="camera-2-snapshot-btn">📸 Snapshot</button>
+                                <button class="camera-btn" id="camera-2-stream-btn">🎥 Live Stream</button>
+                            </div>
+                        </div>
+                        
+                        <div class="card camera-card compact" id="camera-3">
+                            <h3>📹 Driveway Camera</h3>
+                            <div class="camera-display">
+                                <div class="camera-snapshot" id="camera-3-snapshot">
+                                    <img id="camera-3-image" src="" alt="Driveway Camera" style="display: none;">
+                                    <div class="camera-placeholder">📹 Camera Ready</div>
+                                </div>
+                                <div class="camera-status">
+                                    <span>Status: <span id="camera-3-status">Offline</span></span>
+                                    <span>Resolution: <span id="camera-3-resolution">1920x1080</span></span>
+                                </div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="camera-btn" id="camera-3-snapshot-btn">📸 Snapshot</button>
+                                <button class="camera-btn" id="camera-3-stream-btn">🎥 Live Stream</button>
+                            </div>
+                        </div>
+                        
+                        <div class="card camera-card compact" id="camera-4">
+                            <h3>📹 Side Gate Camera</h3>
+                            <div class="camera-display">
+                                <div class="camera-snapshot" id="camera-4-snapshot">
+                                    <img id="camera-4-image" src="" alt="Side Gate Camera" style="display: none;">
+                                    <div class="camera-placeholder">📹 Camera Ready</div>
+                                </div>
+                                <div class="camera-status">
+                                    <span>Status: <span id="camera-4-status">Offline</span></span>
+                                    <span>Resolution: <span id="camera-4-resolution">1920x1080</span></span>
+                                </div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="camera-btn" id="camera-4-snapshot-btn">📸 Snapshot</button>
+                                <button class="camera-btn" id="camera-4-stream-btn">🎥 Live Stream</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Camera System Controls -->
+                    <div class="card camera-system-card compact">
+                        <h2>🎥 Camera System Controls</h2>
+                        <div class="system-status">
+                            <div class="system-info">
+                                <span>System Status: <span id="camera-system-status">Ready</span></span>
+                                <span>Active Cameras: <span id="active-cameras">0/4</span></span>
+                                <span>Recording: <span id="recording-status">Disabled</span></span>
+                            </div>
+                        </div>
+                        <div class="system-controls">
+                            <button class="system-btn" id="refresh-all-cameras">🔄 Refresh All</button>
+                            <button class="system-btn" id="snapshot-all-cameras">📸 Snapshot All</button>
+                            <button class="system-btn" id="discover-cameras">🔍 Discover Cameras</button>
+                        </div>
+                        <div class="recording-controls">
+                            <h3>Recording Controls</h3>
+                            <div class="recording-buttons">
+                                <button class="record-btn" id="start-recording">🔴 Start Recording</button>
+                                <button class="record-btn" id="stop-recording">⏹️ Stop Recording</button>
+                                <button class="record-btn" id="motion-detection">👁️ Motion Detection</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Camera Settings -->
+                    <div class="card camera-settings-card compact">
+                        <h2>⚙️ Camera Settings</h2>
+                        <div class="settings-info">
+                            <div class="network-settings">
+                                <h3>Network Configuration</h3>
+                                <div class="setting-row">
+                                    <label>Camera IP Range:</label>
+                                    <span id="camera-ip-range">192.168.68.100-110</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>ONVIF Port:</label>
+                                    <span id="onvif-port">80</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>RTSP Port:</label>
+                                    <span id="rtsp-port">554</span>
+                                </div>
+                            </div>
+                            <div class="settings-controls">
+                                <button class="settings-btn" id="scan-network">🔍 Scan Network</button>
+                                <button class="settings-btn" id="test-connection">🔗 Test Connection</button>
+                                <button class="settings-btn" id="camera-settings">⚙️ Advanced Settings</button>
+                            </div>
+                        </div>
+                    </div>
+           </div>
+
+           <!-- Credit Cards Tab -->
+           <div class="tab-content" id="creditcard-content">
+                   <!-- Credit Card Summary -->
+                   <div class="card creditcard-summary-card primary">
+                       <h2>💳 Credit Card Overview</h2>
+                       <div class="creditcard-totals">
+                           <div class="total-item">
+                               <div class="total-label">Total Balance</div>
+                               <div class="total-value" id="cc-total-balance">$0.00</div>
+                           </div>
+                           <div class="total-item">
+                               <div class="total-label">Available Credit</div>
+                               <div class="total-value" id="cc-available-credit">$0.00</div>
+                           </div>
+                           <div class="total-item">
+                               <div class="total-label">Total Due</div>
+                               <div class="total-value" id="cc-total-due">$0.00</div>
+                           </div>
+                           <div class="total-item">
+                               <div class="total-label">Active Cards</div>
+                               <div class="total-value" id="cc-active-count">0</div>
+                           </div>
+                       </div>
+                       <div class="creditcard-actions">
+                           <button class="cc-btn" id="refresh-creditcards">🔄 Refresh</button>
+                           <button class="cc-btn" id="open-cc-manager">📱 Open Manager</button>
+                       </div>
+                   </div>
+
+                   <!-- Credit Card Alerts -->
+                   <div class="card creditcard-alerts-card compact">
+                       <h3>⚠️ Payment Alerts</h3>
+                       <div class="alerts-container" id="cc-alerts-container">
+                           <div class="alert-item">
+                               <span class="alert-text">No alerts - all payments up to date</span>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Active Credit Cards -->
+                   <div class="creditcard-grid" id="creditcard-grid">
+                       <!-- Credit cards will be dynamically inserted here -->
+                   </div>
+
+                   <!-- Credit Card Statistics -->
+                   <div class="card creditcard-stats-card compact">
+                       <h3>📊 Credit Statistics</h3>
+                       <div class="stats-grid">
+                           <div class="stat-card">
+                               <h4>Utilization Rate</h4>
+                               <div class="stat-value" id="cc-utilization">0%</div>
+                               <div class="utilization-bar">
+                                   <div class="utilization-fill" id="cc-utilization-fill" style="width: 0%"></div>
+                               </div>
+                           </div>
+                           <div class="stat-card">
+                               <h4>Upcoming Payments</h4>
+                               <div class="stat-value" id="cc-upcoming-payments">0</div>
+                           </div>
+                           <div class="stat-card">
+                               <h4>Overdue Payments</h4>
+                               <div class="stat-value" id="cc-overdue-payments">0</div>
+                           </div>
+                           <div class="stat-card">
+                               <h4>Highest Balance</h4>
+                               <div class="stat-value" id="cc-highest-balance">$0.00</div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Quick Actions -->
+                   <div class="card creditcard-actions-card compact">
+                       <h3>Quick Actions</h3>
+                       <div class="action-buttons">
+                           <button class="cc-action-btn" id="add-new-card">➕ Add Card</button>
+                           <button class="cc-action-btn" id="view-all-cards">📋 View All</button>
+                           <button class="cc-action-btn" id="view-summary">📊 Summary</button>
+                           <button class="cc-action-btn" id="data-transfer">💾 Data Transfer</button>
+                       </div>
+                   </div>
+           </div>
+           
+           <!-- Lighting Tab -->
+           <div class="tab-content" id="lighting-content">
+                <div class="lighting-dashboard">
+                    <!-- Master Controls -->
+                    <div class="master-controls">
+                        <h2>🏠 Master Controls</h2>
+                        <div class="master-buttons">
+                            <button id="allLightsOnBtn" class="master-btn on-btn">🌟 ALL LIGHTS ON</button>
+                            <button id="allLightsOffBtn" class="master-btn off-btn">🌙 ALL LIGHTS OFF</button>
+                        </div>
+                        <div class="master-brightness-controls">
+                            <div class="master-brightness-row">
+                                <label>Set All Lights Brightness:</label>
+                                <input type="number" id="masterBrightness" min="0" max="100" value="100" class="master-brightness-input">
+                                <span>%</span>
+                                <button id="setAllBrightnessBtn" class="master-set-btn">SET ALL</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zigbee Lights Section (Local API Control) -->
+                    <div class="lighting-section">
+                        <h2>🔗 Zigbee Lights (Local Control)</h2>
+                        <div class="lights-grid">
+                            <!-- Kitchen Sink Lights -->
+                            <div class="light-card compact" id="kitchen-lights">
+                                <h3>🍽️ Kitchen Lights</h3>
+                                
+                                <!-- Group Controls -->
+                                <div class="group-controls">
+                                    <button class="light-btn group-btn on-btn" id="kitchen-group-on">ALL ON</button>
+                                    <button class="light-btn group-btn off-btn" id="kitchen-group-off">ALL OFF</button>
+                                </div>
+                                
+                                <div class="dual-light-container">
+                                    <!-- Sink 1 -->
+                                    <div class="light-control mini">
+                                        <h4>Sink 1</h4>
+                                        <div class="light-status" id="sink1-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="sink1-on">ON</button>
+                                            <button class="light-btn off-btn" id="sink1-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="sink1-brightness" min="0" max="100" value="100">
+                                                <span id="sink1-brightness-value">100%</span>
+                                            </div>
+                                            <div class="control-note">
+                                                <small>innr 800 - 2700K fixed</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Sink Light 2 -->
+                                    <div class="light-control mini">
+                                        <h4>Sink 2</h4>
+                                        <div class="light-status" id="sink2-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="sink2-on">ON</button>
+                                            <button class="light-btn off-btn" id="sink2-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="sink2-brightness" min="0" max="100" value="100">
+                                                <span id="sink2-brightness-value">100%</span>
+                                            </div>
+                                            <div class="control-note">
+                                                <small>innr 800 - 2700K fixed</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Kitchen Light 1 (Hue) -->
+                                    <div class="light-control mini">
+                                        <h4>Kitchen Light 1</h4>
+                                        <div class="light-status" id="hue-light1-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="hue-light1-on">ON</button>
+                                            <button class="light-btn off-btn" id="hue-light1-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="hue-light1-brightness" min="1" max="254" value="254">
+                                                <span id="hue-light1-brightness-value">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Kitchen Light 2 (Hue) -->
+                                    <div class="light-control mini">
+                                        <h4>Kitchen Light 2</h4>
+                                        <div class="light-status" id="hue-light2-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="hue-light2-on">ON</button>
+                                            <button class="light-btn off-btn" id="hue-light2-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="hue-light2-brightness" min="1" max="254" value="254">
+                                                <span id="hue-light2-brightness-value">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Kitchen Light 3 (Hue) -->
+                                    <div class="light-control mini">
+                                        <h4>Kitchen Light 3</h4>
+                                        <div class="light-status" id="hue-light3-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="hue-light3-on">ON</button>
+                                            <button class="light-btn off-btn" id="hue-light3-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="hue-light3-brightness" min="1" max="254" value="254">
+                                                <span id="hue-light3-brightness-value">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Kitchen Light 4 (Hue) -->
+                                    <div class="light-control mini">
+                                        <h4>Kitchen Light 4</h4>
+                                        <div class="light-status" id="hue-light4-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="hue-light4-on">ON</button>
+                                            <button class="light-btn off-btn" id="hue-light4-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="hue-light4-brightness" min="1" max="254" value="254">
+                                                <span id="hue-light4-brightness-value">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Kitchen Light 5 (Hue) -->
+                                    <div class="light-control mini">
+                                        <h4>Kitchen Light 5</h4>
+                                        <div class="light-status" id="hue-light5-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="hue-light5-on">ON</button>
+                                            <button class="light-btn off-btn" id="hue-light5-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="hue-light5-brightness" min="1" max="254" value="254">
+                                                <span id="hue-light5-brightness-value">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Kitchen Light 6 (Hue) -->
+                                    <div class="light-control mini">
+                                        <h4>Kitchen Light 6</h4>
+                                        <div class="light-status" id="hue-light6-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="hue-light6-on">ON</button>
+                                            <button class="light-btn off-btn" id="hue-light6-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="hue-light6-brightness" min="1" max="254" value="254">
+                                                <span id="hue-light6-brightness-value">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Kitchen Light 7 (Hue) -->
+                                    <div class="light-control mini">
+                                        <h4>Kitchen Light 7</h4>
+                                        <div class="light-status" id="hue-light7-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="hue-light7-on">ON</button>
+                                            <button class="light-btn off-btn" id="hue-light7-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="hue-light7-brightness" min="1" max="254" value="254">
+                                                <span id="hue-light7-brightness-value">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Kitchen Light 8 (Hue) -->
+                                    <div class="light-control mini">
+                                        <h4>Kitchen Light 8</h4>
+                                        <div class="light-status" id="hue-light8-status">Unknown</div>
+                                        <div class="light-controls">
+                                            <button class="light-btn on-btn" id="hue-light8-on">ON</button>
+                                            <button class="light-btn off-btn" id="hue-light8-off">OFF</button>
+                                        </div>
+                                        <div class="compact-controls">
+                                            <div class="control-row">
+                                                <label>Brightness</label>
+                                                <input type="range" id="hue-light8-brightness" min="1" max="254" value="254">
+                                                <span id="hue-light8-brightness-value">100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Entryway Light -->
+                            <div class="light-card compact" id="entryway-lights">
+                                <h3>🚪 Entryway Light</h3>
+                                <div class="light-control mini">
+                                    <div class="light-status" id="entryway-status">Unknown</div>
+                                    <div class="light-controls">
+                                        <button class="light-btn on-btn" id="entryway-on">ON</button>
+                                        <button class="light-btn off-btn" id="entryway-off">OFF</button>
+                                    </div>
+                                    <div class="compact-controls">
+                                        <div class="control-row">
+                                            <label>Brightness</label>
+                                            <input type="range" id="entryway-brightness" min="0" max="100" value="100">
+                                            <span id="entryway-brightness-value">100%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WiFi Lights Section (Voice Control) -->
+                    <div class="lighting-section">
+                        <h2>📢 WiFi Lights (Voice Control)</h2>
+                        <div class="lights-grid">
+                            <!-- Movie Group -->
+                            <div class="light-card compact" id="movie-lights">
+                                <h3>🎬 Movie Lights</h3>
+                                <div class="group-controls mini">
+                                    <button id="movieGroupOnBtn" class="mini-btn on-btn">ALL ON</button>
+                                    <button id="movieGroupOffBtn" class="mini-btn off-btn">ALL OFF</button>
+                                    <div class="group-brightness-control">
+                                        <input type="number" id="movieGroupBrightness" min="0" max="100" value="100" class="group-brightness-input" placeholder="100">
+                                        <span>%</span>
+                                        <button id="movieGroupSetBtn" class="group-set-btn">SET</button>
+                                    </div>
+                                </div>
+                                <div class="individual-lights-grid">
+                                    <div class="light-mini" id="movie1">
+                                        <span>Light 1</span>
+                                        <div class="light-status" id="movie1-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="movie1-on">ON</button>
+                                            <button class="mini-btn off-btn" id="movie1-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="movie1-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="movie1-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="movie2">
+                                        <span>Light 2</span>
+                                        <div class="light-status" id="movie2-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="movie2-on">ON</button>
+                                            <button class="mini-btn off-btn" id="movie2-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="movie2-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="movie2-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="movie3">
+                                        <span>Light 3</span>
+                                        <div class="light-status" id="movie3-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="movie3-on">ON</button>
+                                            <button class="mini-btn off-btn" id="movie3-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="movie3-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="movie3-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="movie4">
+                                        <span>Light 4</span>
+                                        <div class="light-status" id="movie4-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="movie4-on">ON</button>
+                                            <button class="mini-btn off-btn" id="movie4-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="movie4-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="movie4-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="movie5">
+                                        <span>Light 5</span>
+                                        <div class="light-status" id="movie5-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="movie5-on">ON</button>
+                                            <button class="mini-btn off-btn" id="movie5-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="movie5-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="movie5-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="movie6">
+                                        <span>Light 6</span>
+                                        <div class="light-status" id="movie6-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="movie6-on">ON</button>
+                                            <button class="mini-btn off-btn" id="movie6-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="movie6-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="movie6-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="movie7">
+                                        <span>Light 7</span>
+                                        <div class="light-status" id="movie7-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="movie7-on">ON</button>
+                                            <button class="mini-btn off-btn" id="movie7-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="movie7-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="movie7-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="movie8">
+                                        <span>Light 8</span>
+                                        <div class="light-status" id="movie8-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="movie8-on">ON</button>
+                                            <button class="mini-btn off-btn" id="movie8-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="movie8-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="movie8-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Office Lights -->
+                            <div class="light-card compact" id="office-lights">
+                                <h3>🏢 Office Lights</h3>
+                                <div class="group-controls mini">
+                                    <button id="officeGroupOnBtn" class="mini-btn on-btn">ALL ON</button>
+                                    <button id="officeGroupOffBtn" class="mini-btn off-btn">ALL OFF</button>
+                                    <div class="group-brightness-control">
+                                        <input type="number" id="officeGroupBrightness" min="0" max="100" value="100" class="group-brightness-input" placeholder="100">
+                                        <span>%</span>
+                                        <button id="officeGroupSetBtn" class="group-set-btn">SET</button>
+                                    </div>
+                                </div>
+                                <div class="individual-lights-grid">
+                                    <div class="light-mini" id="office1">
+                                        <span>Bulb 1</span>
+                                        <div class="light-status" id="office1-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="office1-on">ON</button>
+                                            <button class="mini-btn off-btn" id="office1-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="office1-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="office1-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="office2">
+                                        <span>Bulb 2</span>
+                                        <div class="light-status" id="office2-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="office2-on">ON</button>
+                                            <button class="mini-btn off-btn" id="office2-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="office2-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="office2-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Master Bedroom Lights -->
+                            <div class="light-card compact" id="master-bedroom-lights">
+                                <h3>🛏️ Master Bedroom</h3>
+                                <div class="group-controls mini">
+                                    <button id="masterBedroomGroupOnBtn" class="mini-btn on-btn">ALL ON</button>
+                                    <button id="masterBedroomGroupOffBtn" class="mini-btn off-btn">ALL OFF</button>
+                                    <div class="group-brightness-control">
+                                        <input type="number" id="masterBedroomGroupBrightness" min="0" max="100" value="100" class="group-brightness-input" placeholder="100">
+                                        <span>%</span>
+                                        <button id="masterBedroomGroupSetBtn" class="group-set-btn">SET</button>
+                                    </div>
+                                </div>
+                                <div class="individual-lights-grid">
+                                    <div class="light-mini" id="master1">
+                                        <span>Light 1</span>
+                                        <div class="light-status" id="master1-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="master1-on">ON</button>
+                                            <button class="mini-btn off-btn" id="master1-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="master1-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="master1-set-btn">SET</button>
+                                        </div>
+                                        <div class="color-control">
+                                            <label>Color:</label>
+                                            <select id="master1-color" class="color-select">
+                                                <option value="white">White</option>
+                                                <option value="red">Red</option>
+                                                <option value="blue">Blue</option>
+                                                <option value="green">Green</option>
+                                                <option value="yellow">Yellow</option>
+                                                <option value="purple">Purple</option>
+                                                <option value="orange">Orange</option>
+                                                <option value="pink">Pink</option>
+                                                <option value="cyan">Cyan</option>
+                                            </select>
+                                            <button class="set-btn" id="master1-color-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="master2">
+                                        <span>Light 2</span>
+                                        <div class="light-status" id="master2-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="master2-on">ON</button>
+                                            <button class="mini-btn off-btn" id="master2-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="master2-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="master2-set-btn">SET</button>
+                                        </div>
+                                        <div class="color-control">
+                                            <label>Color:</label>
+                                            <select id="master2-color" class="color-select">
+                                                <option value="white">White</option>
+                                                <option value="red">Red</option>
+                                                <option value="blue">Blue</option>
+                                                <option value="green">Green</option>
+                                                <option value="yellow">Yellow</option>
+                                                <option value="purple">Purple</option>
+                                                <option value="orange">Orange</option>
+                                                <option value="pink">Pink</option>
+                                                <option value="cyan">Cyan</option>
+                                            </select>
+                                            <button class="set-btn" id="master2-color-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="master-lamp">
+                                        <span>Lamp</span>
+                                        <div class="light-status" id="master-lamp-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="master-lamp-on">ON</button>
+                                            <button class="mini-btn off-btn" id="master-lamp-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="master-lamp-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="master-lamp-set-btn">SET</button>
+                                        </div>
+                                        <div class="color-control">
+                                            <label>Color:</label>
+                                            <select id="master-lamp-color" class="color-select">
+                                                <option value="white">White</option>
+                                                <option value="red">Red</option>
+                                                <option value="blue">Blue</option>
+                                                <option value="green">Green</option>
+                                                <option value="yellow">Yellow</option>
+                                                <option value="purple">Purple</option>
+                                                <option value="orange">Orange</option>
+                                                <option value="pink">Pink</option>
+                                                <option value="cyan">Cyan</option>
+                                            </select>
+                                            <button class="set-btn" id="master-lamp-color-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="master-switch">
+                                        <span>Switch</span>
+                                        <div class="light-status" id="master-switch-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="master-switch-on">ON</button>
+                                            <button class="mini-btn off-btn" id="master-switch-off">OFF</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Game Room Lights -->
+                            <div class="light-card compact" id="game-room-lights">
+                                <h3>🎮 Game Room</h3>
+                                <div class="group-controls mini">
+                                    <button id="gameRoomGroupOnBtn" class="mini-btn on-btn">ALL ON</button>
+                                    <button id="gameRoomGroupOffBtn" class="mini-btn off-btn">ALL OFF</button>
+                                </div>
+                                <div class="individual-lights-grid">
+                                    <div class="light-mini" id="game1">
+                                        <span>Game Room Light 1</span>
+                                        <div class="light-status" id="game1-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="game1-on">ON</button>
+                                            <button class="mini-btn off-btn" id="game1-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="game1-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="game1-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                    <div class="light-mini" id="game2">
+                                        <span>Game Room Light 2</span>
+                                        <div class="light-status" id="game2-status">Unknown</div>
+                                        <div class="mini-controls">
+                                            <button class="mini-btn on-btn" id="game2-on">ON</button>
+                                            <button class="mini-btn off-btn" id="game2-off">OFF</button>
+                                        </div>
+                                        <div class="brightness-control">
+                                            <label>Brightness:</label>
+                                            <input type="number" id="game2-brightness" min="0" max="100" value="100" class="brightness-input">
+                                            <span>%</span>
+                                            <button class="set-btn" id="game2-set-btn">SET</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           </div>
+
+           <!-- Home Theater Tab -->
+           <div class="tab-content" id="theater-content">
+               <div class="card theater-card primary">
+                   <h2>🎭 Marantz AV8805 - Home Theater Control</h2>
+                   
+                   <!-- Power Control -->
+                   <div class="theater-section">
+                       <h3>⚡ Power Control</h3>
+                       <div class="theater-controls">
+                           <button class="theater-btn power-btn" id="theater-power-on">🔌 Power ON</button>
+                           <button class="theater-btn power-btn" id="theater-power-off">🔌 Power OFF</button>
+                           <div class="status-display">
+                               <span>Status: </span><span id="theater-power-status">--</span>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Volume Control -->
+                   <div class="theater-section">
+                       <h3>🔊 Volume Control</h3>
+                       <div class="theater-controls">
+                           <div class="volume-controls">
+                               <button class="theater-btn volume-btn" id="theater-volume-down">🔉 Vol -</button>
+                               <button class="theater-btn volume-btn" id="theater-volume-up">🔊 Vol +</button>
+                               <button class="theater-btn mute-btn" id="theater-mute-toggle">🔇 Mute</button>
+                           </div>
+                           <div class="volume-display">
+                               <span>Volume: </span><span id="theater-volume-level">--</span>
+                               <span> | Mute: </span><span id="theater-mute-status">--</span>
+                           </div>
+                           <div class="volume-slider">
+                               <input type="range" id="theater-volume-slider" min="0" max="98" value="50">
+                               <div class="volume-preview">
+                                   <span>Setting to: </span><span id="volume-preview-value">50</span>
+                               </div>
+                               <button class="theater-btn" id="theater-volume-set">Set Volume</button>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Input Source -->
+                   <div class="theater-section">
+                       <h3>📺 Input Source</h3>
+                       <div class="theater-controls">
+                           <div class="input-buttons">
+                               <button class="theater-btn input-btn" id="input-tv">📺 TV/SAT</button>
+                               <button class="theater-btn input-btn" id="input-bluray">💿 Blu-ray</button>
+                               <button class="theater-btn input-btn" id="input-game">🎮 Game</button>
+                               <button class="theater-btn input-btn" id="input-media">📱 Media Player</button>
+                               <button class="theater-btn input-btn" id="input-aux1">🔌 AUX1</button>
+                               <button class="theater-btn input-btn" id="input-aux2">🔌 AUX2</button>
+                           </div>
+                           <div class="status-display">
+                               <span>Current Input: </span><span id="theater-input-status">--</span>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Surround Mode -->
+                   <div class="theater-section">
+                       <h3>🎵 Surround Mode</h3>
+                       <div class="theater-controls">
+                           <div class="surround-buttons">
+                               <button class="theater-btn surround-btn" id="surround-stereo">Stereo</button>
+                               <button class="theater-btn surround-btn" id="surround-dolby">Dolby</button>
+                               <button class="theater-btn surround-btn" id="surround-dts">DTS</button>
+                               <button class="theater-btn surround-btn" id="surround-neural">Neural:X</button>
+                               <button class="theater-btn surround-btn" id="surround-multi">Multi Ch</button>
+                           </div>
+                           <div class="status-display">
+                               <span>Current Mode: </span><span id="theater-surround-status">--</span>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Zidoo Media Player Control -->
+                   <div class="theater-section">
+                       <h3>📱 Zidoo Media Player</h3>
+                       <div class="theater-controls">
+                           <div class="zidoo-web-control">
+                               <a href="http://192.168.68.117:9528/pc/" target="_blank" class="theater-btn zidoo-web-btn">
+                                   🌐 Open Zidoo Web Interface
+                               </a>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Air Purifier Control (Kasa Smart Plug) -->
+                   <div class="theater-section">
+                       <h3>🌬️ Theater Air Purifier</h3>
+                       <div class="theater-controls">
+                           <div class="kasa-controls">
+                               <div class="kasa-status">
+                                   <div class="status-display">
+                                       <span>Status: </span><span id="air-purifier-status">--</span>
+                                   </div>
+                                   <div class="status-display">
+                                       <span>Online: </span><span id="air-purifier-online">--</span>
+                                   </div>
+                               </div>
+                               <div class="kasa-buttons">
+                                   <button class="theater-btn kasa-btn" id="air-purifier-on">🟢 Turn ON</button>
+                                   <button class="theater-btn kasa-btn" id="air-purifier-off">🔴 Turn OFF</button>
+                                   <button class="theater-btn kasa-btn" id="air-purifier-toggle">🔄 Toggle</button>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <!-- Status Display -->
+                   <div class="theater-section">
+                       <h3>📊 System Status</h3>
+                       <div class="theater-status">
+                           <div class="status-grid">
+                               <div class="status-item">
+                                   <span class="status-label">Power:</span>
+                                   <span class="status-value" id="status-power">--</span>
+                               </div>
+                               <div class="status-item">
+                                   <span class="status-label">Volume:</span>
+                                   <span class="status-value" id="status-volume">--</span>
+                               </div>
+                               <div class="status-item">
+                                   <span class="status-label">Input:</span>
+                                   <span class="status-value" id="status-input">--</span>
+                               </div>
+                               <div class="status-item">
+                                   <span class="status-label">Surround:</span>
+                                   <span class="status-value" id="status-surround">--</span>
+                               </div>
+                           </div>
+                           <button class="theater-btn refresh-btn" id="theater-refresh">🔄 Refresh Status</button>
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+           <!-- Radio Player Tab -->
+           <div class="tab-content" id="radio-content">
+               <div class="card radio-player-card primary">
+                   <h2>📻 Popz Place Radio</h2>
+                   <div class="radio-player">
+                       <iframe src="https://popz-place-radio.azurewebsites.net" style="width:100%; height:600px; border:none;"></iframe>
+                   </div>
+               </div>
+           </div>
+
+           <!-- Master Bedroom Theater Tab -->
+           <div class="tab-content" id="master-bedroom-theater-content">
+               <div class="card theater-card primary">
+                   <h2>🏠 Master Bedroom Theater Control</h2>
+                   
+                   <!-- Master Bedroom Power Switch -->
+                   <div class="theater-section">
+                       <h3>⚡ Master Bedroom Power Switch</h3>
+                       <div class="theater-controls">
+                           <div class="power-switch-controls">
+                               <div class="switch-status">
+                                   <div class="status-display">
+                                       <span>Status: </span><span id="master-bedroom-switch-status">--</span>
+                                   </div>
+                               </div>
+                               <div class="switch-buttons">
+                                   <button class="theater-btn switch-btn" id="master-bedroom-switch-on">🟢 Turn ON</button>
+                                   <button class="theater-btn switch-btn" id="master-bedroom-switch-off">🔴 Turn OFF</button>
+                                   <button class="theater-btn switch-btn" id="master-bedroom-switch-toggle">🔄 Toggle</button>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                   
+                   <div class="theater-section">
+                       <h3>🎛️ Anthem MRX40 Web Interface</h3>
+                       <div class="theater-controls">
+                           <div class="anthem-web-control">
+                               <a href="http://192.168.68.115" target="_blank" class="theater-btn anthem-web-btn">
+                                   🌐 Open Anthem MRX40 Web Interface
+                               </a>
+                               <p class="anthem-description">
+                                   Full access to Main Zone, Zone 2, audio levels, input selection, and system setup
+                               </p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </main>
+
+        <footer class="footer">
+            <p>Last updated: <span id="last-update">--</span></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
