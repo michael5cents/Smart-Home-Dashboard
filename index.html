@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Home Dashboard</title>
     <link rel="stylesheet" href="styles.css?v=1.2">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
     <div class="container">
@@ -214,75 +215,71 @@
             <div class="tab-content" id="camera-content">
                     <!-- Camera Grid -->
                     <div class="camera-grid">
-                        <div class="card camera-card compact" id="camera-1">
-                            <h3>📹 Front Door Camera</h3>
-                            <div class="camera-display">
-                                <div class="camera-snapshot" id="camera-1-snapshot">
-                                    <img id="camera-1-image" src="" alt="Front Door Camera" style="display: none;">
-                                    <div class="camera-placeholder">📹 Camera Ready</div>
-                                </div>
-                                <div class="camera-status">
-                                    <span>Status: <span id="camera-1-status">Offline</span></span>
-                                    <span>Resolution: <span id="camera-1-resolution">1920x1080</span></span>
-                                </div>
-                            </div>
-                            <div class="camera-controls">
-                                <button class="camera-btn" id="camera-1-snapshot-btn">📸 Snapshot</button>
-                                <button class="camera-btn" id="camera-1-stream-btn">🎥 Live Stream</button>
-                            </div>
-                        </div>
-                        
                         <div class="card camera-card compact" id="camera-2">
                             <h3>📹 Back Yard Camera</h3>
                             <div class="camera-display">
-                                <div class="camera-snapshot" id="camera-2-snapshot">
-                                    <img id="camera-2-image" src="" alt="Back Yard Camera" style="display: none;">
-                                    <div class="camera-placeholder">📹 Camera Ready</div>
-                                </div>
+                                <video id="camera-2-video" controls muted autoplay style="width: 100%; height: auto;">
+                                    <source src="/camera/2/stream" type="application/x-mpegURL">
+                                    Your browser does not support HLS video.
+                                </video>
                                 <div class="camera-status">
-                                    <span>Status: <span id="camera-2-status">Offline</span></span>
-                                    <span>Resolution: <span id="camera-2-resolution">1920x1080</span></span>
+                                    <span>Status: <span id="camera-2-status">Live</span></span>
+                                    <span>Channel: 2</span>
                                 </div>
                             </div>
                             <div class="camera-controls">
-                                <button class="camera-btn" id="camera-2-snapshot-btn">📸 Snapshot</button>
-                                <button class="camera-btn" id="camera-2-stream-btn">🎥 Live Stream</button>
+                                <button class="camera-btn" id="camera-2-toggle">🔄 Refresh</button>
                             </div>
                         </div>
                         
                         <div class="card camera-card compact" id="camera-3">
                             <h3>📹 Driveway Camera</h3>
                             <div class="camera-display">
-                                <div class="camera-snapshot" id="camera-3-snapshot">
-                                    <img id="camera-3-image" src="" alt="Driveway Camera" style="display: none;">
-                                    <div class="camera-placeholder">📹 Camera Ready</div>
-                                </div>
+                                <video id="camera-3-video" controls muted autoplay style="width: 100%; height: auto;">
+                                    <source src="/camera/3/stream" type="application/x-mpegURL">
+                                    Your browser does not support HLS video.
+                                </video>
                                 <div class="camera-status">
-                                    <span>Status: <span id="camera-3-status">Offline</span></span>
-                                    <span>Resolution: <span id="camera-3-resolution">1920x1080</span></span>
+                                    <span>Status: <span id="camera-3-status">Live</span></span>
+                                    <span>Channel: 3</span>
                                 </div>
                             </div>
                             <div class="camera-controls">
-                                <button class="camera-btn" id="camera-3-snapshot-btn">📸 Snapshot</button>
-                                <button class="camera-btn" id="camera-3-stream-btn">🎥 Live Stream</button>
+                                <button class="camera-btn" id="camera-3-toggle">🔄 Refresh</button>
                             </div>
                         </div>
                         
-                        <div class="card camera-card compact" id="camera-4">
+                        <div class="card camera-card compact" id="camera-5">
                             <h3>📹 Side Gate Camera</h3>
                             <div class="camera-display">
-                                <div class="camera-snapshot" id="camera-4-snapshot">
-                                    <img id="camera-4-image" src="" alt="Side Gate Camera" style="display: none;">
-                                    <div class="camera-placeholder">📹 Camera Ready</div>
-                                </div>
+                                <video id="camera-5-video" controls muted autoplay style="width: 100%; height: auto;">
+                                    <source src="/camera/5/stream" type="application/x-mpegURL">
+                                    Your browser does not support HLS video.
+                                </video>
                                 <div class="camera-status">
-                                    <span>Status: <span id="camera-4-status">Offline</span></span>
-                                    <span>Resolution: <span id="camera-4-resolution">1920x1080</span></span>
+                                    <span>Status: <span id="camera-5-status">Live</span></span>
+                                    <span>Channel: 5</span>
                                 </div>
                             </div>
                             <div class="camera-controls">
-                                <button class="camera-btn" id="camera-4-snapshot-btn">📸 Snapshot</button>
-                                <button class="camera-btn" id="camera-4-stream-btn">🎥 Live Stream</button>
+                                <button class="camera-btn" id="camera-5-toggle">🔄 Refresh</button>
+                            </div>
+                        </div>
+                        
+                        <div class="card camera-card compact" id="camera-8">
+                            <h3>📹 Front Door Camera</h3>
+                            <div class="camera-display">
+                                <video id="camera-8-video" controls muted autoplay style="width: 100%; height: auto;">
+                                    <source src="/camera/8/stream" type="application/x-mpegURL">
+                                    Your browser does not support HLS video.
+                                </video>
+                                <div class="camera-status">
+                                    <span>Status: <span id="camera-8-status">Live</span></span>
+                                    <span>Channel: 8</span>
+                                </div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="camera-btn" id="camera-8-toggle">🔄 Refresh</button>
                             </div>
                         </div>
                     </div>

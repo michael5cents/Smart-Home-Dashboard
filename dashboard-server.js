@@ -4,10 +4,14 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const dgram = require('dgram');
+const crypto = require('crypto');
 const WyzeAPI = require('./wyze-api-integration');
-const LorexCameraSystem = require('./lorex-camera-integration');
 
 const PORT = 8083;
+
+// Camera streaming globals
+const activeStreams = new Map();
+const runningProcesses = new Set();
 
 // Hubitat configuration
 const HUBITAT_CONFIG = {
@@ -20,7 +24,7 @@ const HUBITAT_CONFIG = {
     masterBedroomSensorId: '742',  // Master Bedroom Ecobee sensor
     gameRoomSensorId: '741',       // Game Room Ecobee sensor
     masterBedroomSwitchId: '737',  // Master Bedroom Power Switch
-    entrywayLightId: '733'         // Entryway Zigbee Light
+    entrywayLightId: null          // Entryway now on Hue (ID 11)
 };
 
 // Weather device configuration
@@ -38,19 +42,68 @@ const WYZE_CONFIG = {
 
 // Lorex Camera System configuration
 const LOREX_CONFIG = {
-    enabled: false,  // Set to true when Lorex system is installed
-    systemIP: '192.168.68.100',  // Update with actual Lorex system IP
-    username: 'admin',  // Default Lorex username
-    password: '',  // Set Lorex system password
+    enabled: true,
+    systemIP: '192.168.68.118',
+    username: 'admin',
+    password: 'popz2181',
     port: 80,
-    httpsPort: 443,
     cameras: [
-        { id: 1, name: 'Front Door Camera', channel: 1 },
         { id: 2, name: 'Back Yard Camera', channel: 2 },
         { id: 3, name: 'Driveway Camera', channel: 3 },
-        { id: 4, name: 'Side Gate Camera', channel: 4 }
+        { id: 5, name: 'Side Gate Camera', channel: 5 },
+        { id: 8, name: 'Front Door Camera', channel: 8 }
     ]
 };
+
+// Camera streaming functions
+function startCameraStreams() {
+    const { spawn } = require('child_process');
+    
+    LOREX_CONFIG.cameras.forEach((camera, index) => {
+        setTimeout(() => {
+            const channel = camera.channel;
+            const hlsDir = `/tmp/hls/camera${channel}`;
+            
+            // Create directory
+            if (!fs.existsSync(hlsDir)) {
+                fs.mkdirSync(hlsDir, { recursive: true });
+            }
+            
+            const rtspUrl = `rtsp://${LOREX_CONFIG.username}:${LOREX_CONFIG.password}@${LOREX_CONFIG.systemIP}:554/cam/realmonitor?channel=${channel}&subtype=0`;
+            
+            console.log(`🔄 Starting FFmpeg for camera ${channel}`);
+            
+            // Start FFmpeg and let it run forever
+            const ffmpegProcess = spawn('ffmpeg', [
+                '-i', rtspUrl,
+                '-c:v', 'libx264',
+                '-preset', 'ultrafast',
+                '-tune', 'zerolatency',
+                '-g', '15',
+                '-sc_threshold', '0',
+                '-f', 'hls',
+                '-hls_time', '0.5',
+                '-hls_list_size', '2',
+                '-hls_flags', 'delete_segments+independent_segments',
+                '-hls_segment_type', 'mpegts',
+                `${hlsDir}/stream.m3u8`,
+                '-y'
+            ], { 
+                detached: true,
+                stdio: 'ignore'
+            });
+            
+            runningProcesses.add(channel);
+            ffmpegProcess.unref();
+            
+            ffmpegProcess.on('exit', (code) => {
+                console.log(`📹 Camera ${channel} FFmpeg exited with code ${code}`);
+                runningProcesses.delete(channel);
+            });
+            
+        }, index * 3000); // 3 second delay between each camera
+    });
+}
 
 // Initialize Wyze API if configured (currently disabled due to API issues)
 let wyzeAPI = null;
@@ -533,25 +586,7 @@ async function findKasaDeviceIP(targetMac) {
     }
 }
 
-// Initialize Lorex Camera System if enabled
-let lorexCameras = null;
-if (LOREX_CONFIG.enabled) {
-    const LorexCameraSystem = require('./lorex-camera-integration');
-    lorexCameras = new LorexCameraSystem(LOREX_CONFIG);
-    
-    // Test connection on startup
-    lorexCameras.testConnection().then(connected => {
-        if (connected) {
-            console.log('✓ Lorex camera system connected successfully');
-        } else {
-            console.log('✗ Failed to connect to Lorex camera system');
-        }
-    }).catch(err => {
-        console.error('Lorex connection error:', err.message);
-    });
-} else {
-    console.log('⚠️ Lorex camera system not enabled - set LOREX_CONFIG.enabled = true when installed');
-}
+// Lorex camera streaming is now handled directly via FFmpeg HLS conversion
 
 // Philips Hue configuration
 const HUE_CONFIG = {
@@ -568,7 +603,8 @@ const HUE_CONFIG = {
         '7': 'Kitchen Light 7',
         '8': 'Kitchen Light 8',
         '9': 'Sink 1',
-        '10': 'Sink 2'
+        '10': 'Sink 2',
+        '11': 'Entryway'
     },
     groups: {
         '81': 'Kitchen'
@@ -1810,6 +1846,48 @@ const server = http.createServer(async (req, res) => {
                 return;
             }
         }
+        
+        // Camera streaming endpoints
+        if (url.pathname.match(/^\/camera\/\d+\/stream$/)) {
+            const pathParts = url.pathname.split('/');
+            const channel = parseInt(pathParts[2]);
+            
+            // Simply redirect to the HLS playlist that's already being generated
+            res.writeHead(302, {
+                'Location': `/hls/camera${channel}/stream.m3u8`
+            });
+            res.end();
+            return;
+        }
+        
+        // HLS file serving
+        if (url.pathname.startsWith('/hls/')) {
+            const filePath = `/tmp${url.pathname}`;
+            
+            fs.readFile(filePath, (err, data) => {
+                if (err) {
+                    res.writeHead(404, { 'Content-Type': 'text/plain' });
+                    res.end('File not found');
+                    return;
+                }
+                
+                let contentType = 'application/octet-stream';
+                if (filePath.endsWith('.m3u8')) {
+                    contentType = 'application/vnd.apple.mpegurl';
+                } else if (filePath.endsWith('.ts')) {
+                    contentType = 'video/mp2t';
+                }
+                
+                res.writeHead(200, {
+                    'Content-Type': contentType,
+                    'Access-Control-Allow-Origin': '*',
+                    'Cache-Control': 'no-cache'
+                });
+                res.end(data);
+            });
+            return;
+        }
+        
         // Handle lightweight status check (for smart refresh)
         if (url.pathname === '/api/status') {
             const thermostatData = await getThermostatData();
@@ -2844,6 +2922,116 @@ const server = http.createServer(async (req, res) => {
             return;
         }
         
+        // MJPEG Camera Stream Endpoint (Real-time)
+        if (url.pathname.startsWith('/camera/') && url.pathname.endsWith('/mjpeg')) {
+            if (!LOREX_CONFIG.enabled) {
+                res.writeHead(503, { 'Content-Type': 'text/plain' });
+                res.end('Camera system disabled');
+                return;
+            }
+            
+            const pathParts = url.pathname.split('/');
+            const channel = pathParts[2];
+            
+            if (!channel || !['2', '3', '5', '8'].includes(channel)) {
+                res.writeHead(400, { 'Content-Type': 'text/plain' });
+                res.end('Invalid camera channel');
+                return;
+            }
+            
+            try {
+                // Create Digest Auth header
+                const createDigestAuth = (username, password, realm, nonce, uri, method = 'GET') => {
+                    const ha1 = crypto.createHash('md5').update(`${username}:${realm}:${password}`).digest('hex');
+                    const ha2 = crypto.createHash('md5').update(`${method}:${uri}`).digest('hex');
+                    const response = crypto.createHash('md5').update(`${ha1}:${nonce}:${ha2}`).digest('hex');
+                    return `Digest username="${username}", realm="${realm}", nonce="${nonce}", uri="${uri}", response="${response}"`;
+                };
+                
+                const cameraUrl = `http://${LOREX_CONFIG.systemIP}/cgi-bin/mjpg/video.cgi?channel=${channel}&subtype=0`;
+                
+                // First request to get auth challenge
+                const getAuthChallenge = () => {
+                    return new Promise((resolve, reject) => {
+                        const req = http.get(cameraUrl, (authRes) => {
+                            if (authRes.statusCode === 401) {
+                                const authHeader = authRes.headers['www-authenticate'];
+                                if (authHeader && authHeader.includes('Digest')) {
+                                    const realm = authHeader.match(/realm="([^"]+)"/)?.[1];
+                                    const nonce = authHeader.match(/nonce="([^"]+)"/)?.[1];
+                                    resolve({ realm, nonce });
+                                } else {
+                                    reject(new Error('No digest auth found'));
+                                }
+                            } else {
+                                reject(new Error('Unexpected response'));
+                            }
+                        });
+                        req.on('error', reject);
+                        req.setTimeout(5000, () => {
+                            req.destroy();
+                            reject(new Error('Timeout'));
+                        });
+                    });
+                };
+                
+                const { realm, nonce } = await getAuthChallenge();
+                const uri = `/cgi-bin/mjpg/video.cgi?channel=${channel}&subtype=0`;
+                const authHeader = createDigestAuth(LOREX_CONFIG.username, LOREX_CONFIG.password, realm, nonce, uri);
+                
+                // Second request with auth
+                const cameraReq = http.get(cameraUrl, {
+                    headers: {
+                        'Authorization': authHeader,
+                        'User-Agent': 'Mozilla/5.0 (compatible; Dashboard/1.0)'
+                    }
+                }, (cameraRes) => {
+                    if (cameraRes.statusCode === 200) {
+                        res.writeHead(200, {
+                            'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0',
+                            'Connection': 'close'
+                        });
+                        
+                        // Pipe camera stream directly to response
+                        cameraRes.pipe(res);
+                        
+                        // Handle disconnections
+                        req.on('close', () => cameraReq.destroy());
+                        res.on('close', () => cameraReq.destroy());
+                        
+                    } else {
+                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                        res.end(`Camera auth failed: ${cameraRes.statusCode}`);
+                    }
+                });
+                
+                cameraReq.on('error', (error) => {
+                    console.error(`Camera ${channel} stream error:`, error);
+                    if (!res.headersSent) {
+                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                        res.end('Camera stream error');
+                    }
+                });
+                
+                cameraReq.setTimeout(30000, () => {
+                    cameraReq.destroy();
+                    if (!res.headersSent) {
+                        res.writeHead(408, { 'Content-Type': 'text/plain' });
+                        res.end('Camera stream timeout');
+                    }
+                });
+                
+            } catch (error) {
+                console.error(`Error setting up camera ${channel} stream:`, error);
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.end('Camera setup error');
+            }
+            return;
+        }
+        
         // Lorex camera API endpoints
         if (url.pathname === '/api/lorex/cameras') {
             if (!lorexCameras) {
@@ -3089,8 +3277,43 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('🔄 Real-time thermostat control available');
     console.log('📡 Server-Sent Events enabled for real-time updates');
     console.log('🔍 Data monitoring active - updates only when data changes');
+    
+    // Start camera streaming
+    if (LOREX_CONFIG.enabled) {
+        console.log('📹 Initializing camera streaming system...');
+        startCameraStreams();
+    }
 });
 
 server.on('error', (error) => {
     console.error('Server error:', error);
+});
+
+// Cleanup camera streams on server shutdown
+function cleanupCameraStreams() {
+    console.log('🧹 Cleaning up camera streams...');
+    runningProcesses.forEach(channel => {
+        console.log(`Stopping camera ${channel} FFmpeg process`);
+    });
+    // Clean up HLS files
+    exec('rm -rf /tmp/hls/*', (error) => {
+        if (error) {
+            console.error('Error cleaning up HLS files:', error);
+        } else {
+            console.log('✅ HLS files cleaned up');
+        }
+    });
+}
+
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+    console.log('\n🛑 Shutting down server...');
+    cleanupCameraStreams();
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n🛑 Server terminated...');
+    cleanupCameraStreams();
+    process.exit(0);
 });

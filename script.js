@@ -407,7 +407,7 @@ class SmartHomeDashboard {
         updateLightStatus('736', 'zigbee1');    // C8 Zigbee Light 1
         updateLightStatus('737', 'zigbee2');    // C8 Zigbee Light 2
         
-        // Update Entryway Light (Zigbee device 733)
+        // Update Entryway Light (Hue device 11)
         if (lights.entryway) {
             const statusElem = document.getElementById('entryway-status');
             const brightnessElem = document.getElementById('entryway-brightness');
@@ -883,22 +883,22 @@ class SmartHomeDashboard {
             }
         }
 
-        // Entryway Zigbee Light Controls
+        // Entryway Hue Light Controls
         const entrywayOnBtn = document.getElementById('entryway-on');
         const entrywayOffBtn = document.getElementById('entryway-off');
         const entrywayBrightnessSlider = document.getElementById('entryway-brightness');
         
         if (entrywayOnBtn) {
-            entrywayOnBtn.addEventListener('click', () => this.turnOnLight(733));
+            entrywayOnBtn.addEventListener('click', () => this.turnOnHueLight(11));
         }
         if (entrywayOffBtn) {
-            entrywayOffBtn.addEventListener('click', () => this.turnOffLight(733));
+            entrywayOffBtn.addEventListener('click', () => this.turnOffHueLight(11));
         }
         if (entrywayBrightnessSlider) {
             entrywayBrightnessSlider.addEventListener('input', (e) => {
                 const brightness = e.target.value;
                 document.getElementById('entryway-brightness-value').textContent = `${brightness}%`;
-                this.setBrightness(733, brightness);
+                this.setHueBrightness(11, brightness);
             });
         }
 
@@ -1071,7 +1071,7 @@ class SmartHomeDashboard {
         switch (String(deviceId)) {
             case '9': return 'sink1';
             case '10': return 'sink2';
-            case '733': return 'entryway';
+            case '11': return 'entryway';
             default: return null;
         }
     }
@@ -1080,7 +1080,7 @@ class SmartHomeDashboard {
         switch (String(deviceId)) {
             case '9': return 'Sink 1';
             case '10': return 'Sink 2';
-            case '733': return 'Entryway Light';
+            case '11': return 'Entryway';
             default: return 'Unknown Light';
         }
     }
@@ -3403,8 +3403,8 @@ class SmartHomeDashboard {
             await this.setHueBrightness('9', brightnessValue);
             await this.turnOnHueLight('10'); // Kitchen Sink Light 2  
             await this.setHueBrightness('10', brightnessValue);
-            await this.turnOnLight(733); // Entryway Light
-            await this.setBrightness(733, brightnessValue);
+            await this.turnOnHueLight(11); // Entryway Light
+            await this.setHueBrightness(11, brightnessValue);
             
             // Turn on Hue lights with brightness
             await this.turnOnHueLight('1'); // Kitchen Light 1
@@ -3443,7 +3443,7 @@ class SmartHomeDashboard {
             // Also turn off Zigbee and Wyze lights via local API and Echo
             await this.turnOffHueLight('9'); // Sink 1
             await this.turnOffHueLight('10'); // Kitchen Sink Light 2
-            await this.turnOffLight(733); // Entryway Light
+            await this.turnOffHueLight(11); // Entryway Light
             
             // Turn off Hue lights
             await this.turnOffHueLight('1'); // Kitchen Light 1
@@ -3483,7 +3483,7 @@ class SmartHomeDashboard {
             // Also set Zigbee lights via local API
             await this.setHueBrightness('9', brightnessValue); // Kitchen Sink Light 1
             await this.setHueBrightness('10', brightnessValue); // Kitchen Sink Light 2  
-            await this.setBrightness(733, brightnessValue); // Entryway Light
+            await this.setHueBrightness(11, brightnessValue); // Entryway Light
             
             this.showSuccess(`All lights brightness set to ${brightnessValue}% - commands sent to all groups`);
         } catch (error) {
@@ -4175,6 +4175,130 @@ class SmartHomeDashboard {
     }
 }
 
+// HLS camera initialization
+function initializeHLSPlayers() {
+    const cameras = [2, 3, 5, 8];
+    
+    cameras.forEach((channel, index) => {
+        setTimeout(() => {
+            const video = document.getElementById(`camera-${channel}-video`);
+            if (video && Hls.isSupported()) {
+                const hls = new Hls({
+                    enableWorker: false,
+                    lowLatencyMode: true,
+                    backBufferLength: 3,
+                    maxBufferLength: 8,
+                    maxBufferHole: 0.2,
+                    startLevel: -1,
+                    capLevelToPlayerSize: true,
+                    liveSyncDurationCount: 2,
+                    liveMaxLatencyDurationCount: 4,
+                    fragLoadingTimeOut: 3000,
+                    manifestLoadingTimeOut: 3000,
+                    fragLoadingMaxRetry: 3,
+                    manifestLoadingMaxRetry: 3
+                });
+                
+                hls.loadSource(`/camera/${channel}/stream`);
+                hls.attachMedia(video);
+                
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    console.log(`📹 Camera ${channel} HLS stream ready`);
+                    const statusElem = document.getElementById(`camera-${channel}-status`);
+                    if (statusElem) statusElem.textContent = 'Connected';
+                    video.play().catch(e => console.log(`Camera ${channel} autoplay blocked:`, e));
+                });
+                
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    console.error(`Camera ${channel} HLS error:`, data);
+                    const statusElem = document.getElementById(`camera-${channel}-status`);
+                    if (statusElem) statusElem.textContent = 'Error';
+                    
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                setTimeout(() => hls.startLoad(), 1000);
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                console.log(`Attempting restart for camera ${channel}`);
+                                setTimeout(() => {
+                                    hls.destroy();
+                                    retryCamera(channel, 0);
+                                }, 3000);
+                                break;
+                        }
+                    }
+                });
+                
+                video.hlsInstance = hls;
+            } else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native HLS support (Safari)
+                video.src = `/camera/${channel}/stream`;
+                const statusElem = document.getElementById(`camera-${channel}-status`);
+                if (statusElem) statusElem.textContent = 'Connected';
+            }
+        }, index * 2000); // 2 second delay between each camera
+    });
+}
+
+function initializeSingleCamera(channel) {
+    const video = document.getElementById(`camera-${channel}-video`);
+    if (video && Hls.isSupported()) {
+        const hls = new Hls({
+            enableWorker: false,
+            lowLatencyMode: true,
+            backBufferLength: 3,
+            maxBufferLength: 8,
+            maxBufferHole: 0.2,
+            startLevel: -1,
+            capLevelToPlayerSize: true,
+            liveSyncDurationCount: 2,
+            liveMaxLatencyDurationCount: 4,
+            fragLoadingTimeOut: 3000,
+            manifestLoadingTimeOut: 3000,
+            fragLoadingMaxRetry: 3,
+            manifestLoadingMaxRetry: 3
+        });
+        hls.loadSource(`/camera/${channel}/stream`);
+        hls.attachMedia(video);
+        video.hlsInstance = hls;
+    }
+}
+
+function retryCamera(channel, attempt) {
+    const maxRetries = 5;
+    const baseDelay = 2000;
+    
+    if (attempt >= maxRetries) {
+        console.error(`Camera ${channel} failed after ${maxRetries} attempts`);
+        const statusElem = document.getElementById(`camera-${channel}-status`);
+        if (statusElem) statusElem.textContent = 'Failed';
+        return;
+    }
+    
+    const delay = baseDelay * Math.pow(1.5, attempt); // Exponential backoff
+    console.log(`Retrying camera ${channel}, attempt ${attempt + 1} in ${delay}ms`);
+    
+    setTimeout(() => {
+        const statusElem = document.getElementById(`camera-${channel}-status`);
+        if (statusElem) statusElem.textContent = `Retry ${attempt + 1}`;
+        
+        initializeSingleCamera(channel);
+        
+        // Check if it worked after 3 seconds
+        setTimeout(() => {
+            const video = document.getElementById(`camera-${channel}-video`);
+            if (video && (video.readyState === 0 || video.networkState === 3)) {
+                // Still not working, retry
+                retryCamera(channel, attempt + 1);
+            }
+        }, 3000);
+    }, delay);
+}
+
 // Initialize the dashboard when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboard = new SmartHomeDashboard();
@@ -4182,6 +4306,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         window.dashboard.updateAllHueLightsStatus();
     }, 1000);
+    
+    // Initialize camera streams after a delay
+    setTimeout(() => {
+        console.log('🎬 Initializing camera HLS players...');
+        initializeHLSPlayers();
+    }, 3000);
 });
 
 // Export for testing
