@@ -787,12 +787,16 @@ class SmartHomeDashboard {
         // Kitchen Group Controls
         const kitchenGroupOnBtn = document.getElementById('kitchen-group-on');
         const kitchenGroupOffBtn = document.getElementById('kitchen-group-off');
+        const setKitchenBrightnessBtn = document.getElementById('setKitchenBrightnessBtn');
 
         if (kitchenGroupOnBtn) {
             kitchenGroupOnBtn.addEventListener('click', () => this.turnOnKitchenGroup());
         }
         if (kitchenGroupOffBtn) {
             kitchenGroupOffBtn.addEventListener('click', () => this.turnOffKitchenGroup());
+        }
+        if (setKitchenBrightnessBtn) {
+            setKitchenBrightnessBtn.addEventListener('click', () => this.setKitchenGroupBrightness());
         }
 
         // C8 Zigbee Light 1 Controls
@@ -3806,34 +3810,53 @@ class SmartHomeDashboard {
         try {
             console.log('Turning on all Kitchen lights (Sink 1, Sink Light 2, and Hue lights 1-8)');
             
-            // Turn on Sink 1, Sink Light 2 (10), and all Hue lights (1-8)
-            await this.turnOnHueLight('9');
-            
-            const promises = [
-                fetch('/api/hue/lights/10/on', { method: 'POST' }),
-                fetch('/api/hue/lights/1/on', { method: 'POST' }),
-                fetch('/api/hue/lights/2/on', { method: 'POST' }),
-                fetch('/api/hue/lights/3/on', { method: 'POST' }),
-                fetch('/api/hue/lights/4/on', { method: 'POST' }),
-                fetch('/api/hue/lights/5/on', { method: 'POST' }),
-                fetch('/api/hue/lights/6/on', { method: 'POST' }),
-                fetch('/api/hue/lights/7/on', { method: 'POST' }),
-                fetch('/api/hue/lights/8/on', { method: 'POST' })
-            ];
+            // Kitchen light IDs: Sink 1 (9), Sink 2 (10), Kitchen Lights 1-8 (1-8)
+            const lightIds = ['9', '10', '1', '2', '3', '4', '5', '6', '7', '8'];
+            let successCount = 0;
+            let retryNeeded = [];
 
-            const responses = await Promise.all(promises);
-            const allSuccess = responses.every(response => response.ok);
-
-            if (allSuccess) {
-                this.showSuccess('All kitchen lights turned on');
-                // Update all light status (sink lights and Hue lights)
-                setTimeout(() => {
-                    this.updateAllHueLightsStatus();
-                    // Both sink lights now use Hue status updates
-                }, 500);
-            } else {
-                throw new Error('Some lights failed to turn on');
+            // First attempt - with small delays between each light
+            for (const lightId of lightIds) {
+                try {
+                    await this.turnOnHueLight(lightId);
+                    successCount++;
+                    // Small delay between lights to avoid overwhelming the Hue hub
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (error) {
+                    console.warn(`First attempt failed for light ${lightId}, will retry`);
+                    retryNeeded.push(lightId);
+                }
             }
+
+            // Retry failed lights after a brief pause
+            if (retryNeeded.length > 0) {
+                console.log(`Retrying ${retryNeeded.length} lights that failed initial attempt`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                for (const lightId of retryNeeded) {
+                    try {
+                        await this.turnOnHueLight(lightId);
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 150));
+                    } catch (error) {
+                        console.error(`Retry failed for light ${lightId}:`, error);
+                    }
+                }
+            }
+
+            if (successCount === lightIds.length) {
+                this.showSuccess('All kitchen lights turned on');
+            } else if (successCount > 0) {
+                this.showSuccess(`${successCount}/${lightIds.length} kitchen lights turned on`);
+            } else {
+                throw new Error('No lights responded successfully');
+            }
+            
+            // Update all light status
+            setTimeout(() => {
+                this.updateAllHueLightsStatus();
+            }, 500);
+            
         } catch (error) {
             console.error('Error turning on all Kitchen lights:', error);
             this.showError('Failed to turn on all kitchen lights');
@@ -3844,37 +3867,153 @@ class SmartHomeDashboard {
         try {
             console.log('Turning off all Kitchen lights (Sink 1, Sink Light 2, and Hue lights 1-8)');
             
-            // Turn off Sink 1, Sink Light 2 (10), and all Hue lights (1-8)
-            await this.turnOffHueLight('9');
-            
-            const promises = [
-                fetch('/api/hue/lights/10/off', { method: 'POST' }),
-                fetch('/api/hue/lights/1/off', { method: 'POST' }),
-                fetch('/api/hue/lights/2/off', { method: 'POST' }),
-                fetch('/api/hue/lights/3/off', { method: 'POST' }),
-                fetch('/api/hue/lights/4/off', { method: 'POST' }),
-                fetch('/api/hue/lights/5/off', { method: 'POST' }),
-                fetch('/api/hue/lights/6/off', { method: 'POST' }),
-                fetch('/api/hue/lights/7/off', { method: 'POST' }),
-                fetch('/api/hue/lights/8/off', { method: 'POST' })
-            ];
+            // Kitchen light IDs: Sink 1 (9), Sink 2 (10), Kitchen Lights 1-8 (1-8)
+            const lightIds = ['9', '10', '1', '2', '3', '4', '5', '6', '7', '8'];
+            let successCount = 0;
+            let retryNeeded = [];
 
-            const responses = await Promise.all(promises);
-            const allSuccess = responses.every(response => response.ok);
-
-            if (allSuccess) {
-                this.showSuccess('All kitchen lights turned off');
-                // Update all light status (sink lights and Hue lights)
-                setTimeout(() => {
-                    this.updateAllHueLightsStatus();
-                    // Both sink lights now use Hue status updates
-                }, 500);
-            } else {
-                throw new Error('Some lights failed to turn off');
+            // First attempt - with small delays between each light
+            for (const lightId of lightIds) {
+                try {
+                    await this.turnOffHueLight(lightId);
+                    successCount++;
+                    // Small delay between lights to avoid overwhelming the Hue hub
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (error) {
+                    console.warn(`First attempt failed for light ${lightId}, will retry`);
+                    retryNeeded.push(lightId);
+                }
             }
+
+            // Retry failed lights after a brief pause
+            if (retryNeeded.length > 0) {
+                console.log(`Retrying ${retryNeeded.length} lights that failed initial attempt`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                for (const lightId of retryNeeded) {
+                    try {
+                        await this.turnOffHueLight(lightId);
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 150));
+                    } catch (error) {
+                        console.error(`Retry failed for light ${lightId}:`, error);
+                    }
+                }
+            }
+
+            if (successCount === lightIds.length) {
+                this.showSuccess('All kitchen lights turned off');
+            } else if (successCount > 0) {
+                this.showSuccess(`${successCount}/${lightIds.length} kitchen lights turned off`);
+            } else {
+                throw new Error('No lights responded successfully');
+            }
+            
+            // Update all light status
+            setTimeout(() => {
+                this.updateAllHueLightsStatus();
+            }, 500);
+            
         } catch (error) {
             console.error('Error turning off all Kitchen lights:', error);
             this.showError('Failed to turn off all kitchen lights');
+        }
+    }
+
+    async setKitchenGroupBrightness() {
+        try {
+            const brightnessInput = document.getElementById('kitchenGroupBrightness');
+            if (!brightnessInput) {
+                throw new Error('Brightness input not found');
+            }
+
+            const brightnessPercent = parseInt(brightnessInput.value);
+            if (isNaN(brightnessPercent) || brightnessPercent < 1 || brightnessPercent > 100) {
+                throw new Error('Invalid brightness value. Must be between 1 and 100.');
+            }
+
+            console.log(`Setting all Kitchen lights brightness to ${brightnessPercent}%`);
+            
+            // Kitchen light IDs: Sink 1 (9), Sink 2 (10), Kitchen Lights 1-8 (1-8)
+            const lightIds = ['9', '10', '1', '2', '3', '4', '5', '6', '7', '8'];
+            let successCount = 0;
+            let retryNeeded = [];
+
+            // First attempt - with small delays between each light to avoid overwhelming the hub
+            for (const lightId of lightIds) {
+                try {
+                    await this.setHueBrightness(lightId, brightnessPercent);
+                    successCount++;
+                    // Small delay between lights to avoid overwhelming the Hue hub
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (error) {
+                    console.warn(`First attempt failed for light ${lightId}, will retry`);
+                    retryNeeded.push(lightId);
+                }
+            }
+
+            // Retry failed lights after a brief pause
+            if (retryNeeded.length > 0) {
+                console.log(`Retrying ${retryNeeded.length} lights that failed initial attempt`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                for (const lightId of retryNeeded) {
+                    try {
+                        await this.setHueBrightness(lightId, brightnessPercent);
+                        successCount++;
+                        await new Promise(resolve => setTimeout(resolve, 150));
+                    } catch (error) {
+                        console.error(`Retry failed for light ${lightId}:`, error);
+                    }
+                }
+            }
+
+            if (successCount === lightIds.length) {
+                this.showSuccess(`All ${lightIds.length} kitchen lights brightness set to ${brightnessPercent}%`);
+            } else if (successCount > 0) {
+                this.showSuccess(`${successCount}/${lightIds.length} kitchen lights brightness set to ${brightnessPercent}%`);
+            } else {
+                throw new Error('No lights responded successfully');
+            }
+            
+            // Update all brightness sliders to match
+            setTimeout(() => {
+                // Convert percentage to Hue scale for sliders
+                const hueBrightness = Math.max(1, Math.round((brightnessPercent / 100) * 254));
+                
+                // Update Sink 1 and Sink 2 sliders
+                const sink1Slider = document.getElementById('sink1-brightness');
+                const sink1Value = document.getElementById('sink1-brightness-value');
+                const sink2Slider = document.getElementById('sink2-brightness');
+                const sink2Value = document.getElementById('sink2-brightness-value');
+                
+                if (sink1Slider && sink1Value) {
+                    sink1Slider.value = brightnessPercent;
+                    sink1Value.textContent = `${brightnessPercent}%`;
+                }
+                if (sink2Slider && sink2Value) {
+                    sink2Slider.value = brightnessPercent;
+                    sink2Value.textContent = `${brightnessPercent}%`;
+                }
+                
+                // Update Hue lights 1-8 sliders
+                for (let i = 1; i <= 8; i++) {
+                    const hueSlider = document.getElementById(`hue-light${i}-brightness`);
+                    const hueValue = document.getElementById(`hue-light${i}-brightness-value`);
+                    
+                    if (hueSlider && hueValue) {
+                        hueSlider.value = hueBrightness;
+                        hueValue.textContent = `${brightnessPercent}%`;
+                    }
+                }
+                
+                // Update all status displays
+                this.updateAllHueLightsStatus();
+            }, 500);
+            
+        } catch (error) {
+            console.error('Error setting Kitchen group brightness:', error);
+            this.showError(`Failed to set kitchen lights brightness: ${error.message}`);
         }
     }
 
