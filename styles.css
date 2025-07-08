@@ -1833,6 +1833,19 @@ body {
     background: linear-gradient(135deg, #764ba2 0%, #6b46c1 100%);
 }
 
+/* Zidoo Power Controls */
+.zidoo-power-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.zidoo-power-controls .power-btn {
+    flex: 1;
+    min-width: 110px;
+}
+
 /* Zidoo Web Interface Button */
 .zidoo-web-control {
     margin-bottom: 15px;

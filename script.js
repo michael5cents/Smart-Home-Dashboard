@@ -1885,6 +1885,12 @@ class SmartHomeDashboard {
         this.showToast(message, 'success');
     }
 
+    // Show info message
+    showInfo(message) {
+        console.log(message);
+        this.showToast(message, 'info');
+    }
+
     // Simple toast notification system
     showToast(message, type = 'info') {
         const toast = document.createElement('div');
@@ -2659,6 +2665,17 @@ class SmartHomeDashboard {
         }
         if (masterSwitchToggleBtn) {
             masterSwitchToggleBtn.addEventListener('click', () => this.controlMasterBedroomSwitch('toggle'));
+        }
+
+        // Zidoo Power Controls
+        const zidooPowerOnBtn = document.getElementById('zidoo-power-on');
+        const zidooPowerOffBtn = document.getElementById('zidoo-power-off');
+
+        if (zidooPowerOnBtn) {
+            zidooPowerOnBtn.addEventListener('click', () => this.controlZidooPower('on'));
+        }
+        if (zidooPowerOffBtn) {
+            zidooPowerOffBtn.addEventListener('click', () => this.controlZidooPower('off'));
         }
 
         // Initial status refresh
@@ -4310,6 +4327,28 @@ class SmartHomeDashboard {
             const switchState = status.switch === 'on' ? 'ON' : 'OFF';
             statusElement.textContent = switchState;
             statusElement.className = status.switch === 'on' ? 'status-on' : 'status-off';
+        }
+    }
+
+    async controlZidooPower(action) {
+        try {
+            const powerAction = action === 'on' ? 'power_on' : 'power_off';
+            this.showInfo(`${action === 'on' ? 'Powering on' : 'Powering off'} Zidoo media player...`);
+            
+            const response = await fetch(`/api/theater/zidoo/${powerAction}`, { method: 'POST' });
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.showSuccess(`Zidoo ${action === 'on' ? 'power on' : 'power off'} successful`);
+                } else {
+                    this.showError(`Zidoo ${action === 'on' ? 'power on' : 'power off'} failed: ${result.message || result.error || 'Unknown error'}`);
+                }
+            } else {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error controlling Zidoo power:', error);
+            this.showError(`Failed to control Zidoo power: ${action}`);
         }
     }
 }

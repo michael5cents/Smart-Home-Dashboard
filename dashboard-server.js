@@ -118,7 +118,8 @@ if (WYZE_CONFIG.enabled && WYZE_CONFIG.apiKey && WYZE_CONFIG.keyId && WYZE_CONFI
 const ZIDOO_CONFIG = {
     enabled: true,
     ip: '192.168.68.117',
-    port: 9528
+    port: 9528,
+    macAddress: '80:0A:80:5D:AB:95'  // Zidoo Media Player MAC address
 };
 
 // Kasa Smart Plug configuration
@@ -298,6 +299,67 @@ async function getMarantzStatus() {
 }
 
 // Zidoo Control Functions
+// Wake-on-LAN function for Zidoo power on
+async function sendWakeOnLAN(targetIP, macAddress) {
+    return new Promise((resolve, reject) => {
+        // Create magic packet for Wake-on-LAN
+        const macBytes = macAddress.split(':').map(hex => parseInt(hex, 16));
+        
+        // Magic packet: 6 bytes of 0xFF followed by 16 repetitions of MAC address
+        const magicPacket = Buffer.alloc(102);
+        
+        // Fill first 6 bytes with 0xFF
+        for (let i = 0; i < 6; i++) {
+            magicPacket[i] = 0xFF;
+        }
+        
+        // Add MAC address 16 times
+        for (let i = 0; i < 16; i++) {
+            for (let j = 0; j < 6; j++) {
+                magicPacket[6 + i * 6 + j] = macBytes[j];
+            }
+        }
+        
+        // Send UDP packet to broadcast address and directly to target IP
+        const client = dgram.createSocket('udp4');
+        client.bind(() => {
+            client.setBroadcast(true);
+            
+            // Try multiple approaches for Wake-on-LAN delivery
+            const sendPromises = [
+                // Standard broadcast to port 9
+                new Promise((resolve, reject) => {
+                    client.send(magicPacket, 0, magicPacket.length, 9, '255.255.255.255', (error) => {
+                        if (error) reject(error); else resolve();
+                    });
+                }),
+                // Alternative broadcast to port 7
+                new Promise((resolve, reject) => {
+                    client.send(magicPacket, 0, magicPacket.length, 7, '255.255.255.255', (error) => {
+                        if (error) reject(error); else resolve();
+                    });
+                }),
+                // Direct to target IP on port 9 (for subnet-specific delivery)
+                new Promise((resolve, reject) => {
+                    client.send(magicPacket, 0, magicPacket.length, 9, targetIP, (error) => {
+                        if (error) reject(error); else resolve();
+                    });
+                })
+            ];
+            
+            // If any method succeeds, consider it successful
+            Promise.any(sendPromises).then(() => {
+                client.close();
+                resolve();
+            }).catch((errors) => {
+                client.close();
+                // Report the first error for debugging
+                reject(errors.errors ? errors.errors[0] : errors);
+            });
+        });
+    });
+}
+
 async function sendZidooCommand(action) {
     if (!ZIDOO_CONFIG.enabled) {
         throw new Error('Zidoo control is disabled');
@@ -315,7 +377,9 @@ async function sendZidooCommand(action) {
         'ok': '28',
         'back': '158',
         'home': '102',
-        'menu': '139'
+        'menu': '139',
+        'power_on': '116',   // Power button - may also try Wake-on-LAN
+        'power_off': '116'   // Power button for shutdown
     };
     
     const keyCode = keyMap[action];
@@ -323,15 +387,52 @@ async function sendZidooCommand(action) {
         throw new Error(`Unknown Zidoo action: ${action}`);
     }
     
-    // For now, just return success since we haven't found the correct API format
     console.log(`Zidoo command attempted: ${action} with key ${keyCode}`);
     
-    // Try different URL formats
-    const urls = [
-        `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/ZidooControlCenter/RemoteControl/sendkey?key=${keyCode}`,
-        `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/ZidooControlCenter/RemoteControl/sendkey?code=${keyCode}`,
-        `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/api/v1/remote/key/${keyCode}`
-    ];
+    // Handle power on with Wake-on-LAN first
+    if (action === 'power_on') {
+        try {
+            await sendWakeOnLAN(ZIDOO_CONFIG.ip, ZIDOO_CONFIG.macAddress);
+            console.log('✅ Wake-on-LAN packet sent to Zidoo at 80:0A:80:5D:AB:95');
+            
+            // For power on, just sending WOL might be enough
+            // Return success for WOL and let user know device is starting
+            return { 
+                success: true, 
+                action, 
+                message: "Wake-on-LAN packet sent. Zidoo device should power on in 30-60 seconds." 
+            };
+        } catch (error) {
+            console.log('Wake-on-LAN failed:', error.message);
+            return { 
+                success: false, 
+                action, 
+                message: `Wake-on-LAN failed: ${error.message}` 
+            };
+        }
+    }
+    
+    // For power off, try different URL formats and power-specific endpoints
+    let urls = [];
+    
+    if (action === 'power_off') {
+        // Try power-specific endpoints first
+        urls = [
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/ZidooControlCenter/RemoteControl/poweroff`,
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/ZidooControlCenter/RemoteControl/shutdown`,
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/api/v1/system/poweroff`,
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/api/v1/system/shutdown`,
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/ZidooControlCenter/RemoteControl/sendkey?key=${keyCode}`,
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/ZidooControlCenter/RemoteControl/sendkey?code=${keyCode}`
+        ];
+    } else {
+        // Regular key commands
+        urls = [
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/ZidooControlCenter/RemoteControl/sendkey?key=${keyCode}`,
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/ZidooControlCenter/RemoteControl/sendkey?code=${keyCode}`,
+            `http://${ZIDOO_CONFIG.ip}:${ZIDOO_CONFIG.port}/api/v1/remote/key/${keyCode}`
+        ];
+    }
     
     for (const url of urls) {
         try {
