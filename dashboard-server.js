@@ -48,11 +48,28 @@ const LOREX_CONFIG = {
     password: 'popz2181',
     port: 80,
     cameras: [
-        { id: 2, name: 'Back Yard Camera', channel: 2 },
-        { id: 3, name: 'Driveway Camera', channel: 3 },
-        { id: 5, name: 'Side Gate Camera', channel: 5 },
-        { id: 8, name: 'Front Door Camera', channel: 8 }
+        { id: 1, name: 'Front Door Camera', channel: 1 },
+        { id: 2, name: 'Front Right Camera', channel: 2 },
+        { id: 3, name: 'Front Left Camera', channel: 3 },
+        { id: 4, name: 'Office Camera', channel: 4 }
     ]
+};
+
+// Ring Camera System configuration
+const RING_CONFIG = {
+    enabled: true,
+    systemIP: '192.168.68.94',
+    macAddress: '34:3E:A4:4F:BC:35',
+    email: 'michael5cents@gmail.com',
+    password: 'Popz2181##',
+    proxyPort: 8084,
+    camera: {
+        id: 5,
+        name: 'Garage Camera',
+        channel: 5,
+        type: 'ring',
+        location: 'Garage'
+    }
 };
 
 // Camera streaming functions
@@ -76,15 +93,12 @@ function startCameraStreams() {
             // Start FFmpeg and let it run forever
             const ffmpegProcess = spawn('ffmpeg', [
                 '-i', rtspUrl,
-                '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-tune', 'zerolatency',
-                '-g', '15',
-                '-sc_threshold', '0',
+                '-c:v', 'copy',
+                '-c:a', 'copy',
                 '-f', 'hls',
-                '-hls_time', '0.5',
-                '-hls_list_size', '2',
-                '-hls_flags', 'delete_segments+independent_segments',
+                '-hls_time', '6',
+                '-hls_list_size', '5',
+                '-hls_flags', 'delete_segments',
                 '-hls_segment_type', 'mpegts',
                 `${hlsDir}/stream.m3u8`,
                 '-y'
