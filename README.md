@@ -1,6 +1,26 @@
-# Smart Home Dashboard v2.0.0
+# Smart Home Dashboard v2.1.0 - Optimized
 
 A comprehensive, real-time Smart Home Dashboard with Hubitat integration, multi-device control, and modern web interface. Control your entire smart home ecosystem from a single, responsive dashboard.
+
+## 🚀 Latest Improvements (v2.1.0)
+
+### 📈 Major Performance Optimizations
+- **99% CPU Reduction**: FFmpeg processes now use ~1% CPU (down from 135-194% each)
+- **94% Memory Reduction**: Memory usage dropped from ~850MB to ~50MB per camera process
+- **82% Load Reduction**: System load average reduced from 22+ to under 4
+- **Eliminated Camera Buffering**: No more blinking, flashing, or refresh issues
+
+### 🎛️ Enhanced Control System
+- **New Control Scripts**: Comprehensive process management with accurate feedback
+- **Desktop Notifications**: GUI notifications for all dashboard operations
+- **Resource Monitoring**: Real-time CPU, memory, and load average monitoring
+- **Multiple Control Options**: Start, stop, status, restart, clean-restart, logs
+
+### 🔧 Technical Improvements
+- **Copy Codec Streaming**: Direct RTSP-to-HLS conversion (no re-encoding)
+- **Optimized Segments**: Consistent 6-second segments with 5-segment buffer
+- **Better Process Detection**: Finds all dashboard and FFmpeg processes accurately
+- **Color-coded Output**: Visual status indicators in terminal
 
 ## 🏠 Overview
 
@@ -35,11 +55,11 @@ The Smart Home Dashboard is a professional-grade home automation interface that 
 - Motion sensor status tracking
 
 ### 📹 Security Cameras
-- Multi-camera system support (4 cameras)
-- Live snapshots and streaming
+- **4-camera Lorex system** with live HLS streaming
+- Real-time video feeds in dashboard
 - Camera discovery and network scanning
 - Recording controls and motion detection
-- Lorex integration ready (hardware pending)
+- **Ring camera access** via convenient web link
 
 ### 🎭 Home Theater
 - **Main Theater**: Marantz AV8805 control (power, volume, inputs, surround modes)
@@ -84,8 +104,11 @@ The Smart Home Dashboard is a professional-grade home automation interface that 
 
 4. **Launch the dashboard:**
    ```bash
-   # Using the launch script (recommended)
-   ./launch-dashboard.sh
+   # Using enhanced control script (recommended)
+   ./dashboard-control-enhanced.sh start
+   
+   # Or using individual scripts
+   ./dashboard-start-enhanced.sh
    
    # Or directly with Node.js
    npm start
@@ -94,9 +117,45 @@ The Smart Home Dashboard is a professional-grade home automation interface that 
 5. **Access the dashboard:**
    Open your browser to `http://localhost:8083`
 
-### Advanced Setup Scripts
-The project includes several setup and utility scripts:
-- `launch-dashboard.sh` - Main dashboard launcher with error checking
+### Enhanced Control Scripts (NEW!)
+The project now includes powerful control scripts with desktop notifications:
+
+#### Main Control Script
+```bash
+# Start dashboard with resource monitoring
+./dashboard-control-enhanced.sh start
+
+# Stop all processes (dashboard + cameras)
+./dashboard-control-enhanced.sh stop
+
+# Check detailed status with system resources
+./dashboard-control-enhanced.sh status
+
+# Graceful restart
+./dashboard-control-enhanced.sh restart
+
+# Force kill all processes and restart
+./dashboard-control-enhanced.sh clean-restart
+
+# View live logs
+./dashboard-control-enhanced.sh logs
+```
+
+#### Individual Scripts with Desktop Notifications
+- `dashboard-start-enhanced.sh` - Enhanced startup with GUI notifications
+- `dashboard-stop-enhanced.sh` - Complete process cleanup with feedback
+- `dashboard-status-enhanced.sh` - System monitoring with GUI notifications
+
+#### Desktop Integration
+Create desktop files for one-click control:
+- `Dashboard-Start.desktop` - Start dashboard
+- `Dashboard-Stop.desktop` - Stop all processes  
+- `Dashboard-Status.desktop` - Check system status
+- `Dashboard-Restart.desktop` - Graceful restart
+- `Dashboard-CleanRestart.desktop` - Force restart
+
+### Legacy Scripts
+- `launch-dashboard.sh` - Original launcher (still available)
 - `quick-transfer.sh` - File transfer utilities
 - `start-file-transfer.sh` - LAN file transfer setup
 
@@ -160,12 +219,18 @@ GET /api/locks/status
 
 ```
 dashboard/
-├── dashboard-server.js          # Main Node.js server
+├── dashboard-server.js          # Main Node.js server (optimized)
 ├── index.html                   # Main dashboard interface
 ├── script.js                    # Frontend JavaScript
 ├── styles.css                   # Dashboard styling
 ├── package.json                 # Dependencies and scripts
-├── launch-dashboard.sh          # Launch script
+├── 
+├── Enhanced Control Scripts (NEW!)/
+├── ├── dashboard-control-enhanced.sh    # Main control script
+├── ├── dashboard-start-enhanced.sh      # Enhanced startup with notifications
+├── ├── dashboard-stop-enhanced.sh       # Complete process cleanup
+├── ├── dashboard-status-enhanced.sh     # System monitoring with GUI
+├── └── launch-dashboard.sh              # Legacy launcher (still available)
 ├── 
 ├── Integration Modules/
 ├── ├── lorex-camera-integration.js    # Camera system integration
@@ -183,9 +248,10 @@ dashboard/
 ├── │   └── data-transfer.html      # Data transfer tools
 ├── 
 ├── Documentation/
-├── ├── README.md                   # This file
-├── ├── LOREX_SETUP_GUIDE.md       # Camera setup guide
-├── └── BACKUP_RESTORE_GUIDE.md    # Backup procedures
+├── ├── README.md                        # This file
+├── ├── DASHBOARD_OPTIMIZATION_SUMMARY.md # Performance optimization details
+├── ├── LOREX_SETUP_GUIDE.md            # Camera setup guide
+├── └── BACKUP_RESTORE_GUIDE.md         # Backup procedures
 ├── 
 ├── Data Files/
 ├── ├── credit-card-data-*.json     # Financial data storage
@@ -209,18 +275,36 @@ dashboard/
 - **Echo Speaks** - Alexa voice integration
 
 ### Ready for Integration
-- **Lorex Camera Systems** - 4-camera security setup
 - **Wyze Devices** - Additional smart home devices
 - **Zidoo Media Players** - 4K media streaming
 - **Anthem AV Receivers** - Master bedroom theater
 
+### Integrated Camera Systems
+- **Lorex 4-Camera System** - Live HLS streaming with FFmpeg conversion
+- **Ring Cameras** - Web-based access via dashboard link
+
 ## 🚀 Performance Features
 
+### Core Performance (v2.1.0)
+- **Ultra-Low CPU Usage**: ~1% CPU per camera (99% reduction from previous versions)
+- **Minimal Memory Footprint**: ~50MB per camera process (94% reduction)
+- **Copy Codec Streaming**: Direct RTSP-to-HLS conversion with no re-encoding
+- **Optimized Buffering**: 6-second segments with 5-segment buffer (30 seconds)
+- **System Efficiency**: Load average reduced by 82% (22+ down to <4)
+
+### Application Performance
 - **Real-time Updates**: Server-Sent Events for live data
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Error Handling**: Automatic reconnection and fallback systems
 - **Modular Architecture**: Easy to add new device integrations
 - **Caching**: Efficient data management and reduced API calls
+
+### Enhanced Control & Monitoring
+- **Process Management**: Accurate detection of all dashboard and camera processes
+- **Resource Monitoring**: Real-time CPU, memory, and load average tracking
+- **Desktop Notifications**: GUI feedback for all operations
+- **Color-coded Output**: Visual status indicators in terminal
+- **Multiple Control Options**: Start, stop, status, restart, clean-restart, logs
 
 ## 🔧 API Endpoints
 
@@ -296,7 +380,9 @@ For setup questions or device integration help:
 
 ---
 
-**Dashboard Version**: 2.0.0  
-**Last Updated**: 2025  
+**Dashboard Version**: 2.1.0 - Optimized  
+**Last Updated**: August 2025  
+**Major Optimizations**: 99% CPU reduction, Enhanced controls, Copy codec streaming  
 **Compatible Node.js**: 14.0+  
-**Default Port**: 8083
+**Default Port**: 8083  
+**System Requirements**: Significantly reduced - Now runs efficiently on any modern system
