@@ -1,14 +1,21 @@
-# Smart Home Dashboard v2.1.0 - Optimized
+# Smart Home Dashboard v2.2.0 - Camera Streaming Breakthrough
 
 A comprehensive, real-time Smart Home Dashboard with Hubitat integration, multi-device control, and modern web interface. Control your entire smart home ecosystem from a single, responsive dashboard.
 
-## 🚀 Latest Improvements (v2.1.0)
+## 🚀 Latest Breakthrough (v2.2.0)
 
-### 📈 Major Performance Optimizations
-- **99% CPU Reduction**: FFmpeg processes now use ~1% CPU (down from 135-194% each)
-- **94% Memory Reduction**: Memory usage dropped from ~850MB to ~50MB per camera process
-- **82% Load Reduction**: System load average reduced from 22+ to under 4
-- **Eliminated Camera Buffering**: No more blinking, flashing, or refresh issues
+### 🎥 Camera Streaming Revolution
+- **H.264/H.265 Dual-Stream Discovery**: Solved Lorex camera browser compatibility issues
+- **No-Transcoding Solution**: Direct H.264 substream access for optimal performance
+- **SSE Connection Cleanup**: Fixed memory leaks and connection stacking
+- **Bulletproof Camera Streaming**: Eliminated black screens and infinite buffering
+- **Technical Documentation**: Complete analysis of camera architecture and browser limitations
+
+### 🔧 Critical System Fixes
+- **Dead Connection Removal**: Proper SSE client cleanup prevents CPU waste
+- **Config Management System**: Centralized IP configuration prevents address reversions  
+- **Systemd Integration**: Desktop scripts now detect and work with system services
+- **Stream Parameter Discovery**: `subtype=1` for H.264 vs `subtype=0` for H.265/HEVC
 
 ### 🎛️ Enhanced Control System
 - **New Control Scripts**: Comprehensive process management with accurate feedback
@@ -248,10 +255,11 @@ dashboard/
 ├── │   └── data-transfer.html      # Data transfer tools
 ├── 
 ├── Documentation/
-├── ├── README.md                        # This file
-├── ├── DASHBOARD_OPTIMIZATION_SUMMARY.md # Performance optimization details
-├── ├── LOREX_SETUP_GUIDE.md            # Camera setup guide
-├── └── BACKUP_RESTORE_GUIDE.md         # Backup procedures
+├── ├── README.md                             # This file
+├── ├── LOREX_CAMERA_STREAMING_TECHNICAL_REPORT.md  # Camera architecture analysis
+├── ├── DASHBOARD_OPTIMIZATION_SUMMARY.md     # Performance optimization details
+├── ├── LOREX_SETUP_GUIDE.md                 # Camera setup guide
+├── └── BACKUP_RESTORE_GUIDE.md              # Backup procedures
 ├── 
 ├── Data Files/
 ├── ├── credit-card-data-*.json     # Financial data storage
@@ -280,12 +288,13 @@ dashboard/
 - **Anthem AV Receivers** - Master bedroom theater
 
 ### Integrated Camera Systems
-- **Lorex 4-Camera System** - Live HLS streaming with FFmpeg conversion
+- **Lorex 4-Camera System** - Live HLS streaming with dual-stream architecture (H.264/H.265)
 - **Ring Cameras** - Web-based access via dashboard link
+- **Browser-Compatible Streaming** - H.264 substream access for universal compatibility
 
 ## 🚀 Performance Features
 
-### Core Performance (v2.1.0)
+### Core Performance (v2.2.0)
 - **Ultra-Low CPU Usage**: ~1% CPU per camera (99% reduction from previous versions)
 - **Minimal Memory Footprint**: ~50MB per camera process (94% reduction)
 - **Copy Codec Streaming**: Direct RTSP-to-HLS conversion with no re-encoding
@@ -380,9 +389,9 @@ For setup questions or device integration help:
 
 ---
 
-**Dashboard Version**: 2.1.0 - Optimized  
+**Dashboard Version**: 2.2.0 - Camera Streaming Breakthrough  
 **Last Updated**: August 2025  
-**Major Optimizations**: 99% CPU reduction, Enhanced controls, Copy codec streaming  
+**Major Breakthrough**: Solved Lorex H.264/H.265 browser compatibility, Fixed SSE memory leaks  
 **Compatible Node.js**: 14.0+  
 **Default Port**: 8083  
-**System Requirements**: Significantly reduced - Now runs efficiently on any modern system
+**System Requirements**: Optimized - Runs efficiently with bulletproof camera streaming
