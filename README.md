@@ -163,8 +163,6 @@ Create desktop files for one-click control:
 
 ### Legacy Scripts
 - `launch-dashboard.sh` - Original launcher (still available)
-- `quick-transfer.sh` - File transfer utilities
-- `start-file-transfer.sh` - LAN file transfer setup
 
 ## ⚙️ Configuration
 
@@ -266,9 +264,7 @@ dashboard/
 ├── └── *.log                       # System logs
 ├── 
 └── Utilities/
-    ├── lan-file-transfer.py        # Python file transfer
-    ├── transfer-file*.sh           # Shell transfer scripts
-    └── quick-transfer.sh           # Quick file operations
+    └── Various utility scripts     # System utilities and helpers
 ```
 
 ## 🔌 Device Support
@@ -364,10 +360,6 @@ dashboard/
 - Version control for dashboard updates
 - Easy restore procedures documented in `BACKUP_RESTORE_GUIDE.md`
 
-### File Transfer System
-- LAN-based file transfer capabilities
-- Quick transfer utilities for media files
-- Network file sharing integration
 
 ## 🤝 Contributing
 
