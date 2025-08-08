@@ -49,27 +49,10 @@ const LOREX_CONFIG = {
     port: 80,
     cameras: [
         { id: 1, name: 'Front Door Camera', channel: 1 },
-        { id: 2, name: 'Front Right Camera', channel: 2 },
-        { id: 3, name: 'Front Left Camera', channel: 3 },
-        { id: 4, name: 'Office Camera', channel: 4 }
+        { id: 2, name: 'Camera 2', channel: 2 },
+        { id: 3, name: 'Camera 3', channel: 3 },
+        { id: 4, name: 'Camera 4', channel: 4 }
     ]
-};
-
-// Ring Camera System configuration
-const RING_CONFIG = {
-    enabled: true,
-    systemIP: '192.168.68.94',
-    macAddress: '34:3E:A4:4F:BC:35',
-    email: 'michael5cents@gmail.com',
-    password: 'Popz2181##',
-    proxyPort: 8084,
-    camera: {
-        id: 5,
-        name: 'Garage Camera',
-        channel: 5,
-        type: 'ring',
-        location: 'Garage'
-    }
 };
 
 // Camera streaming functions
@@ -86,20 +69,23 @@ function startCameraStreams() {
                 fs.mkdirSync(hlsDir, { recursive: true });
             }
             
-            const rtspUrl = `rtsp://${LOREX_CONFIG.username}:${LOREX_CONFIG.password}@${LOREX_CONFIG.systemIP}:554/cam/realmonitor?channel=${channel}&subtype=0`;
+            const rtspUrl = `rtsp://${LOREX_CONFIG.username}:${LOREX_CONFIG.password}@${LOREX_CONFIG.systemIP}:554/cam/realmonitor?channel=${channel}&subtype=1`;
             
             console.log(`🔄 Starting FFmpeg for camera ${channel}`);
             
-            // Start FFmpeg and let it run forever
+            // Start FFmpeg with copy codec (no re-encoding) accessing H.264 substream
+            // Optimized for low latency: 2-second segments, 3-segment list (6 seconds total buffer)
             const ffmpegProcess = spawn('ffmpeg', [
                 '-i', rtspUrl,
+                '-threads', '2',
                 '-c:v', 'copy',
                 '-c:a', 'copy',
                 '-f', 'hls',
-                '-hls_time', '6',
-                '-hls_list_size', '5',
+                '-hls_time', '2',
+                '-hls_list_size', '3',
                 '-hls_flags', 'delete_segments',
                 '-hls_segment_type', 'mpegts',
+                '-hls_start_number_source', 'datetime',
                 `${hlsDir}/stream.m3u8`,
                 '-y'
             ], { 
@@ -3387,7 +3373,7 @@ setInterval(monitorDataChanges, 30000);
 
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Smart Home Dashboard running at http://localhost:${PORT}`);
-    console.log(`🌐 Also accessible from LAN at http://192.168.68.121:${PORT}`);
+    console.log(`🌐 Also accessible from LAN at http://192.168.68.97:${PORT}`);
     console.log('🏠 Connected to Ecobee thermostat via Hubitat C8');
     console.log('🔄 Real-time thermostat control available');
     console.log('📡 Server-Sent Events enabled for real-time updates');

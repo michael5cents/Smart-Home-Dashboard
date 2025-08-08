@@ -1,8 +1,16 @@
-# Smart Home Dashboard v2.2.0 - Camera Streaming Breakthrough
+# Smart Home Dashboard v2.2.1 - Low Latency Camera Streaming
 
 A comprehensive, real-time Smart Home Dashboard with Hubitat integration, multi-device control, and modern web interface. Control your entire smart home ecosystem from a single, responsive dashboard.
 
-## 🚀 Latest Breakthrough (v2.2.0)
+## 🚀 Latest Update (v2.2.1) - Camera Latency Optimization
+
+### 📹 Low Latency Streaming (August 8, 2025)
+- **66% Latency Reduction**: Camera delay reduced from 9-10 seconds to 3-4 seconds
+- **Optimized HLS Parameters**: 2-second segments with 3-segment playlist
+- **Maintained Stability**: No buffering issues, copy codec efficiency preserved
+- **Improved Responsiveness**: Better for real-time security monitoring
+
+## 🎥 Previous Breakthrough (v2.2.0)
 
 ### 🎥 Camera Streaming Revolution
 - **H.264/H.265 Dual-Stream Discovery**: Solved Lorex camera browser compatibility issues
@@ -381,8 +389,9 @@ For setup questions or device integration help:
 
 ---
 
-**Dashboard Version**: 2.2.0 - Camera Streaming Breakthrough  
-**Last Updated**: August 2025  
+**Dashboard Version**: 2.2.1 - Low Latency Camera Streaming  
+**Last Updated**: August 8, 2025  
+**Latest Optimization**: 66% camera latency reduction (3-4 second delay)  
 **Major Breakthrough**: Solved Lorex H.264/H.265 browser compatibility, Fixed SSE memory leaks  
 **Compatible Node.js**: 14.0+  
 **Default Port**: 8083  

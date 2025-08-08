@@ -1,6 +1,6 @@
 {
   "name": "smart-home-dashboard",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Smart Home Dashboard with Hubitat integration, real-time updates, and custom voice commands",
   "main": "dashboard-server.js",
   "scripts": {
