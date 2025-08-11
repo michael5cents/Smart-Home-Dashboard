@@ -2,7 +2,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const dgram = require('dgram');
 const crypto = require('crypto');
 const WyzeAPI = require('./wyze-api-integration');
@@ -1828,22 +1828,136 @@ function generateDashboardHTML(thermostatData, lockDevices = [], sensorData = nu
 
 // Store for tracking data changes and SSE connections
 let lastDataHash = '';
-let sseClients = [];
+let sseClients = new Map(); // Use Map for better client tracking
+let clientIdCounter = 0;
+
+// SSE connection management settings
+const SSE_HEARTBEAT_INTERVAL = 30000; // 30 seconds
+const SSE_CONNECTION_TIMEOUT = 60000; // 60 seconds
+const MAX_SSE_CLIENTS = 10; // Limit concurrent connections
+
+// Function to send heartbeat to SSE clients
+function sendSSEHeartbeat(client) {
+    try {
+        client.res.write(':heartbeat\n\n');
+        client.lastHeartbeat = Date.now();
+        return true;
+    } catch (error) {
+        console.error('Heartbeat failed for client', client.id, ':', error.message);
+        return false;
+    }
+}
+
+// Clean up stale SSE connections
+function cleanupStaleSSEConnections() {
+    const now = Date.now();
+    const staleClients = [];
+    
+    sseClients.forEach((client, id) => {
+        if (now - client.lastHeartbeat > SSE_CONNECTION_TIMEOUT) {
+            staleClients.push(id);
+        }
+    });
+    
+    staleClients.forEach(id => {
+        const client = sseClients.get(id);
+        if (client) {
+            console.log('Removing stale SSE client:', id);
+            try {
+                client.res.end();
+            } catch (e) {
+                // Connection already closed
+            }
+            sseClients.delete(id);
+        }
+    });
+    
+    if (staleClients.length > 0) {
+        console.log(`Cleaned up ${staleClients.length} stale connections. Active clients: ${sseClients.size}`);
+    }
+}
+
+// Start heartbeat and cleanup interval
+setInterval(() => {
+    const deadClients = [];
+    sseClients.forEach((client, id) => {
+        if (!sendSSEHeartbeat(client)) {
+            deadClients.push(id);
+        }
+    });
+    
+    deadClients.forEach(id => {
+        console.log('Removing dead client:', id);
+        sseClients.delete(id);
+    });
+    
+    cleanupStaleSSEConnections();
+}, SSE_HEARTBEAT_INTERVAL);
+
+// Function to trigger server restart when max SSE clients reached
+function triggerServerRestart() {
+    console.log('=== AUTOMATIC RESTART TRIGGERED ===');
+    console.log('Reason: Maximum SSE clients reached');
+    console.log('This restart is needed to reset connections for climate control');
+    
+    // Close all existing SSE connections gracefully
+    sseClients.forEach((client, id) => {
+        try {
+            client.res.write('event: server-restart\ndata: {"message": "Server restarting due to connection limit"}\n\n');
+            client.res.end();
+        } catch (error) {
+            // Ignore errors during shutdown
+        }
+    });
+    sseClients.clear();
+    
+    // Use the control script to restart the server
+    const scriptPath = '/home/michael5cents/dashboard/dashboard-control-enhanced.sh';
+    
+    // Delay to allow current connections to close
+    setTimeout(() => {
+        console.log('Executing restart command...');
+        const restart = spawn('bash', [scriptPath, 'restart'], {
+            detached: true,
+            stdio: 'ignore'
+        });
+        restart.unref();
+        
+        // Exit current process after spawning restart
+        setTimeout(() => {
+            console.log('Exiting for restart...');
+            process.exit(0);
+        }, 2000);
+    }, 3000);
+}
 
 // Function to broadcast data changes to all connected clients
 function broadcastDataChange(data) {
     const dataHash = JSON.stringify(data);
     if (dataHash !== lastDataHash) {
         lastDataHash = dataHash;
-        console.log('Data changed, broadcasting to', sseClients.length, 'clients');
+        console.log('Data changed, broadcasting to', sseClients.size, 'clients');
         
-        sseClients.forEach(client => {
+        const deadClients = [];
+        sseClients.forEach((client, id) => {
             try {
-                client.write(`data: ${JSON.stringify(data)}\n\n`);
+                client.res.write(`data: ${JSON.stringify(data)}\n\n`);
+                client.lastHeartbeat = Date.now();
             } catch (error) {
-                console.error('Error sending SSE data:', error);
+                console.error('Error sending SSE data to client', id, ':', error.message);
+                deadClients.push(id);
             }
         });
+        
+        // Remove dead clients
+        deadClients.forEach(id => {
+            console.log('Removing dead client during broadcast:', id);
+            sseClients.delete(id);
+        });
+        
+        if (deadClients.length > 0) {
+            console.log(`Removed ${deadClients.length} dead clients. Active clients: ${sseClients.size}`);
+        }
     }
 }
 
@@ -2011,17 +2125,52 @@ const server = http.createServer(async (req, res) => {
 
         // Server-Sent Events endpoint for real-time updates
         if (url.pathname === '/api/events') {
+            // Check if we've reached the maximum number of clients
+            if (sseClients.size >= MAX_SSE_CLIENTS) {
+                console.warn('Maximum SSE clients reached, triggering server restart');
+                res.writeHead(503, { 'Content-Type': 'text/plain' });
+                res.end('Server restarting due to connection limit - please retry in 10 seconds');
+                
+                // Trigger server restart after a brief delay to allow response
+                setTimeout(() => {
+                    console.log('Initiating automatic restart due to max SSE clients reached');
+                    triggerServerRestart();
+                }, 1000);
+                return;
+            }
+            
             res.writeHead(200, {
                 'Content-Type': 'text/event-stream',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive',
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Cache-Control'
+                'Access-Control-Allow-Headers': 'Cache-Control',
+                'X-Accel-Buffering': 'no' // Disable proxy buffering
             });
 
-            // Add client to SSE clients list
-            sseClients.push(res);
-            console.log('New SSE client connected. Total clients:', sseClients.length);
+            // Create client object with metadata
+            const clientId = ++clientIdCounter;
+            const client = {
+                id: clientId,
+                res: res,
+                req: req,
+                connectedAt: Date.now(),
+                lastHeartbeat: Date.now(),
+                ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
+            };
+            
+            // Add client to SSE clients map
+            sseClients.set(clientId, client);
+            console.log(`New SSE client connected (ID: ${clientId}, IP: ${client.ip}). Total clients: ${sseClients.size}`);
+
+            // Send initial heartbeat to verify connection
+            try {
+                res.write(':connected\n\n');
+            } catch (error) {
+                console.error('Failed to send initial heartbeat, removing client:', clientId);
+                sseClients.delete(clientId);
+                return;
+            }
 
             // Send initial data
             try {
@@ -2060,16 +2209,25 @@ const server = http.createServer(async (req, res) => {
                 
                 res.write(`data: ${JSON.stringify(initialData)}\n\n`);
                 lastDataHash = JSON.stringify(initialData);
+                client.lastHeartbeat = Date.now();
             } catch (error) {
                 console.error('Error sending initial SSE data:', error);
             }
 
             // Remove client when connection closes
             req.on('close', () => {
-                const index = sseClients.indexOf(res);
-                if (index !== -1) {
-                    sseClients.splice(index, 1);
-                    console.log('SSE client disconnected. Total clients:', sseClients.length);
+                if (sseClients.has(clientId)) {
+                    sseClients.delete(clientId);
+                    console.log(`SSE client disconnected (ID: ${clientId}). Total clients: ${sseClients.size}`);
+                }
+            });
+            
+            // Also handle error event
+            req.on('error', (error) => {
+                console.error(`SSE client error (ID: ${clientId}):`, error.message);
+                if (sseClients.has(clientId)) {
+                    sseClients.delete(clientId);
+                    console.log(`SSE client removed due to error (ID: ${clientId}). Total clients: ${sseClients.size}`);
                 }
             });
 

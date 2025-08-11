@@ -1,10 +1,17 @@
-# Smart Home Dashboard v2.2.1 - Low Latency Camera Streaming
+# Smart Home Dashboard v2.2.2 - Intelligent Connection Management
 
-A comprehensive, real-time Smart Home Dashboard with Hubitat integration, multi-device control, and modern web interface. Control your entire smart home ecosystem from a single, responsive dashboard.
+A comprehensive, real-time Smart Home Dashboard with Hubitat integration, multi-device control, and advanced auto-healing capabilities. Control your entire smart home ecosystem from a single, responsive dashboard with bulletproof connection reliability.
 
-## 🚀 Latest Update (v2.2.1) - Camera Latency Optimization
+## 🚀 Latest Update (v2.2.2) - Automatic SSE Restart System
 
-### 📹 Low Latency Streaming (August 8, 2025)
+### ⚡ Intelligent Connection Management (August 10, 2025)
+- **Auto-Restart on Connection Limits**: When SSE client limit (10) is reached, server automatically restarts instead of permanently blocking connections
+- **Climate Control Continuity**: Ensures continuous polling devices (thermostats, sensors) can always reconnect after restart
+- **Self-Healing Architecture**: Prevents permanent connection deadlocks that previously required manual intervention
+- **Graceful Recovery**: Notifies all connected clients before restart, minimizing disruption to active sessions
+- **Enhanced Reliability**: Critical for climate control systems that require constant connectivity
+
+### 📹 Previous Update (v2.2.1) - Low Latency Streaming
 - **66% Latency Reduction**: Camera delay reduced from 9-10 seconds to 3-4 seconds
 - **Optimized HLS Parameters**: 2-second segments with 3-segment playlist
 - **Maintained Stability**: No buffering issues, copy codec efficiency preserved
@@ -132,29 +139,35 @@ The Smart Home Dashboard is a professional-grade home automation interface that 
 5. **Access the dashboard:**
    Open your browser to `http://localhost:8083`
 
-### Enhanced Control Scripts (NEW!)
-The project now includes powerful control scripts with desktop notifications:
+### Enhanced Control Scripts with Auto-Restart Support
+The project now includes powerful control scripts with desktop notifications and automatic restart capabilities:
 
 #### Main Control Script
 ```bash
-# Start dashboard with resource monitoring
+# Start dashboard with resource monitoring and auto-restart capability
 ./dashboard-control-enhanced.sh start
 
 # Stop all processes (dashboard + cameras)
 ./dashboard-control-enhanced.sh stop
 
-# Check detailed status with system resources
+# Check detailed status with system resources and SSE connections
 ./dashboard-control-enhanced.sh status
 
-# Graceful restart
+# Graceful restart (also used by auto-restart system)
 ./dashboard-control-enhanced.sh restart
 
-# Force kill all processes and restart
+# Force kill all processes and restart (for recovery)
 ./dashboard-control-enhanced.sh clean-restart
 
-# View live logs
+# View live logs (includes auto-restart messages)
 ./dashboard-control-enhanced.sh logs
 ```
+
+#### Auto-Restart Integration
+The control scripts are now integrated with the automatic restart system:
+- When SSE client limit is reached, server automatically calls `restart` command
+- No manual intervention required for connection limit recovery
+- All restart events are logged for monitoring and troubleshooting
 
 #### Individual Scripts with Desktop Notifications
 - `dashboard-start-enhanced.sh` - Enhanced startup with GUI notifications
@@ -306,11 +319,18 @@ dashboard/
 - **System Efficiency**: Load average reduced by 82% (22+ down to <4)
 
 ### Application Performance
-- **Real-time Updates**: Server-Sent Events for live data
+- **Real-time Updates**: Server-Sent Events for live data with intelligent connection management
+- **Auto-Healing Architecture**: Automatic server restart when SSE connection limits reached
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Error Handling**: Automatic reconnection and fallback systems
 - **Modular Architecture**: Easy to add new device integrations
 - **Caching**: Efficient data management and reduced API calls
+
+### SSE Connection Management (v2.2.2)
+- **Intelligent Restart**: Prevents permanent connection blocks when 10+ SSE clients connect
+- **Climate Control Reliability**: Critical for continuous thermostat and sensor polling
+- **Graceful Recovery**: All clients notified before restart, can reconnect in ~10 seconds
+- **Self-Healing**: No manual intervention required for connection limit issues
 
 ### Enhanced Control & Monitoring
 - **Process Management**: Accurate detection of all dashboard and camera processes
@@ -320,6 +340,11 @@ dashboard/
 - **Multiple Control Options**: Start, stop, status, restart, clean-restart, logs
 
 ## 🔧 API Endpoints
+
+### Core System Endpoints (v2.2.2)
+- `GET /api/status` - Lightweight status check for SSE connection monitoring
+- `GET /api/events` - Server-Sent Events stream with auto-restart capability
+- `GET /dashboard-status` - Comprehensive dashboard status (legacy compatibility)
 
 ### Thermostat Control
 - `GET /api/thermostat/status` - Get current thermostat status
@@ -341,6 +366,11 @@ dashboard/
 - `GET /api/cameras/status` - Get camera system status
 - `POST /api/cameras/{id}/snapshot` - Take snapshot
 - `GET /api/cameras/discover` - Discover network cameras
+
+### Entertainment & Theater
+- `GET /api/theater/status` - Get Marantz receiver status
+- `POST /api/theater/{action}` - Control theater system (power, volume, inputs)
+- `GET /api/kasa/status` - Get smart plug and device status
 
 ## 🔒 Security Considerations
 
@@ -389,10 +419,11 @@ For setup questions or device integration help:
 
 ---
 
-**Dashboard Version**: 2.2.1 - Low Latency Camera Streaming  
-**Last Updated**: August 8, 2025  
-**Latest Optimization**: 66% camera latency reduction (3-4 second delay)  
-**Major Breakthrough**: Solved Lorex H.264/H.265 browser compatibility, Fixed SSE memory leaks  
+**Dashboard Version**: 2.2.2 - Intelligent Connection Management  
+**Last Updated**: August 10, 2025  
+**Latest Feature**: Automatic SSE restart system for bulletproof connection reliability  
+**Major Breakthrough**: Self-healing architecture prevents permanent connection deadlocks  
+**Climate Control**: Continuous connectivity guaranteed for thermostat and sensor polling  
 **Compatible Node.js**: 14.0+  
 **Default Port**: 8083  
-**System Requirements**: Optimized - Runs efficiently with bulletproof camera streaming
+**System Requirements**: Optimized - Runs efficiently with auto-healing capabilities
