@@ -23,7 +23,7 @@ if [[ -x "$CONTROL_SCRIPT" ]]; then
     EXIT_CODE=$?
     
     if [[ $EXIT_CODE -eq 0 ]]; then
-        notify_dashboard "Dashboard Server" "✅ Started successfully!\n\n🌐 Local: http://localhost:8083\n🏠 LAN: http://192.168.68.121:8083\n\nClick to check status" "media-playback-start" 8000
+        notify_dashboard "Dashboard Server" "✅ Started successfully!\n\n🌐 Local: http://localhost:8083\n🏠 LAN: http://192.168.68.97:8083\n\nClick to check status" "media-playback-start" 8000
     else
         # Extract error message
         ERROR_MSG=$(echo "$OUTPUT" | tail -3 | head -1)
@@ -35,10 +35,16 @@ else
     
     cd "$DASHBOARD_DIR"
     
-    # Check if already running
+    # Check if systemd service is running
+    if systemctl is-active --quiet dashboard.service; then
+        notify_dashboard "Dashboard Server" "✅ Already running via systemd!\n\n🌐 Local: http://localhost:8083\n🏠 LAN: http://192.168.68.97:8083" "media-playback-start" 6000
+        exit 0
+    fi
+    
+    # Check if manually running
     if pgrep -f "dashboard-server.js" > /dev/null; then
         EXISTING_PIDS=$(pgrep -f "dashboard-server.js" | tr '\n' ' ')
-        notify_dashboard "Dashboard Server" "⚠️ Already running!\n\nPIDs: $EXISTING_PIDS\n\nUse Stop first if needed" "dialog-information" 6000
+        notify_dashboard "Dashboard Server" "⚠️ Already running manually!\n\nPIDs: $EXISTING_PIDS\n\nUse Stop first if needed" "dialog-information" 6000
         exit 1
     fi
     
@@ -50,7 +56,7 @@ else
     # Wait and check
     sleep 3
     if kill -0 "$NEW_PID" 2>/dev/null; then
-        notify_dashboard "Dashboard Server" "✅ Started successfully!\n\nPID: $NEW_PID\n🌐 Local: http://localhost:8083\n🏠 LAN: http://192.168.68.121:8083" "media-playback-start" 8000
+        notify_dashboard "Dashboard Server" "✅ Started successfully!\n\nPID: $NEW_PID\n🌐 Local: http://localhost:8083\n🏠 LAN: http://192.168.68.97:8083" "media-playback-start" 8000
     else
         notify_dashboard "Dashboard Server" "❌ Failed to start!\n\nCheck logs for details:\ntail -f dashboard.log" "dialog-error" 10000
         rm -f dashboard.pid

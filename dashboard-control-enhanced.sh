@@ -56,10 +56,19 @@ case "$1" in
     start)
         echo -e "${BLUE}🚀 Starting Dashboard Server...${NC}"
         
-        # Check if any dashboard processes are running
+        # Check if systemd service is running
+        if systemctl is-active --quiet dashboard.service; then
+            echo -e "${GREEN}✅ Dashboard is already running via systemd service${NC}"
+            echo -e "   Local: http://localhost:8083"
+            echo -e "   LAN: http://192.168.68.97:8083"
+            echo -e "   Use 'systemctl status dashboard.service' for details"
+            exit 0
+        fi
+        
+        # Check if any manual dashboard processes are running
         EXISTING_PIDS=$(get_dashboard_pids)
         if [[ -n "$EXISTING_PIDS" ]]; then
-            echo -e "${YELLOW}⚠️  Dashboard processes already running (PIDs: $EXISTING_PIDS)${NC}"
+            echo -e "${YELLOW}⚠️  Dashboard processes already running manually (PIDs: $EXISTING_PIDS)${NC}"
             echo -e "Use 'stop' to kill all processes first, or 'restart' to restart cleanly."
             exit 1
         fi
@@ -82,7 +91,7 @@ case "$1" in
             echo -e "${GREEN}✅ Dashboard server started successfully!${NC}"
             echo -e "   PID: $PID"
             echo -e "   Local: http://localhost:8083"
-            echo -e "   LAN: http://192.168.68.121:8083"
+            echo -e "   LAN: http://192.168.68.97:8083"
             check_system_resources
         else
             echo -e "${RED}❌ Failed to start dashboard server${NC}"
@@ -151,7 +160,7 @@ case "$1" in
             echo -e "${GREEN}✅ Dashboard Server: RUNNING${NC}"
             echo -e "   PIDs: $DASHBOARD_PIDS"
             echo -e "   Local: http://localhost:8083"
-            echo -e "   LAN: http://192.168.68.121:8083"
+            echo -e "   LAN: http://192.168.68.97:8083"
             
             # Check if PID file matches reality
             if [[ -f "$PID_FILE" ]]; then

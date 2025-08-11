@@ -45,7 +45,7 @@ class SmartHomeDashboard {
             camera1: { name: 'Front Door Camera', ip: '192.168.68.100', resolution: '1920x1080' },
             camera2: { name: 'Back Yard Camera', ip: '192.168.68.101', resolution: '1920x1080' },
             camera3: { name: 'Driveway Camera', ip: '192.168.68.102', resolution: '1920x1080' },
-            camera4: { name: 'Side Gate Camera', ip: '192.168.68.103', resolution: '1920x1080' }
+            camera4: { name: 'Side Gate Camera', ip: '192.168.68.103', resolution: '1920x1080' },
         };
 
         // Credit card data
@@ -77,13 +77,13 @@ class SmartHomeDashboard {
 
         // Sensor data properties
         this.sensors = {
-            'Master Bedroom': {
+            masterBedroom: {
                 temperature: 0,
                 motion: 'inactive',
                 status: 'unknown',
                 lastUpdate: null
             },
-            'Game Room': {
+            gameRoom: {
                 temperature: 0,
                 motion: 'inactive',
                 status: 'unknown',
@@ -157,10 +157,17 @@ class SmartHomeDashboard {
     connectToRealTimeUpdates() {
         console.log('Connecting to real-time updates...');
 
+        // Clear any existing reconnect timeout
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+
         // Close existing connection if any
         if (this.eventSource) {
             console.log('Closing existing EventSource connection');
             this.eventSource.close();
+            this.eventSource = null;
         }
 
         try {
@@ -169,15 +176,29 @@ class SmartHomeDashboard {
             console.log('Creating new EventSource connection to:', eventSourceUrl);
             this.eventSource = new EventSource(eventSourceUrl);
             console.log('EventSource readyState:', this.eventSource.readyState);
+            
+            // Track last activity time for detecting stale connections
+            this.lastSSEActivity = Date.now();
 
             this.eventSource.onopen = () => {
                 console.log('Real-time connection established, readyState:', this.eventSource.readyState);
                 this.reconnectAttempts = 0;
                 this.reconnectDelay = 1000;
+                this.lastSSEActivity = Date.now();
+                this.updateConnectionStatus('✅ Connected', true);
             };
 
             this.eventSource.onmessage = (event) => {
                 try {
+                    // Update activity timestamp
+                    this.lastSSEActivity = Date.now();
+                    
+                    // Handle heartbeat messages
+                    if (event.data === ':heartbeat' || event.data === ':connected') {
+                        console.log('Heartbeat received');
+                        return;
+                    }
+                    
                     const data = JSON.parse(event.data);
                     console.log('Real-time data received:', data);
                     this.processRealtimeData(data);
@@ -190,19 +211,24 @@ class SmartHomeDashboard {
                 console.error('Real-time connection error. EventSource readyState:', this.eventSource.readyState, 'Error:', error);
                 this.updateConnectionStatus('❌ Connection lost - Reconnecting...', false);
 
-                // Log additional error details if available
-                if (this.eventSource.readyState === EventSource.CLOSED) {
-                    console.error('EventSource connection closed');
+                // Clean up the broken connection
+                if (this.eventSource) {
+                    this.eventSource.close();
+                    this.eventSource = null;
                 }
+
+                // Log additional error details if available
+                console.error('EventSource connection closed/errored');
 
                 // Attempt to reconnect with exponential backoff
                 if (this.reconnectAttempts < this.maxReconnectAttempts) {
                     this.reconnectAttempts++;
-                    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+                    // Cap the delay at 30 seconds
+                    const delay = Math.min(30000, this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1));
 
                     console.log('Reconnecting in ' + delay + 'ms (attempt ' + this.reconnectAttempts + '/' + this.maxReconnectAttempts + ')');
 
-                    setTimeout(() => {
+                    this.reconnectTimeout = setTimeout(() => {
                         this.connectToRealTimeUpdates();
                     }, delay);
                 } else {
@@ -211,15 +237,51 @@ class SmartHomeDashboard {
                 }
             };
 
-            // Close the connection when the page unloads
-            window.addEventListener('beforeunload', () => {
-                if (this.eventSource) {
-                    this.eventSource.close();
-                }
-            });
+            // Only add the beforeunload listener once
+            if (!this.unloadListenerAdded) {
+                this.unloadListenerAdded = true;
+                window.addEventListener('beforeunload', () => {
+                    if (this.eventSource) {
+                        console.log('Closing SSE connection before page unload');
+                        this.eventSource.close();
+                        this.eventSource = null;
+                    }
+                    if (this.reconnectTimeout) {
+                        clearTimeout(this.reconnectTimeout);
+                        this.reconnectTimeout = null;
+                    }
+                });
+            }
+            
+            // Monitor for stale connections (no activity for 90 seconds)
+            if (!this.staleConnectionInterval) {
+                this.staleConnectionInterval = setInterval(() => {
+                    if (this.eventSource && this.lastSSEActivity) {
+                        const timeSinceLastActivity = Date.now() - this.lastSSEActivity;
+                        if (timeSinceLastActivity > 90000) {
+                            console.warn('SSE connection appears stale, reconnecting...');
+                            this.updateConnectionStatus('⚠️ Connection stale - Reconnecting...', false);
+                            if (this.eventSource) {
+                                this.eventSource.close();
+                                this.eventSource = null;
+                            }
+                            this.connectToRealTimeUpdates();
+                        }
+                    }
+                }, 45000); // Check every 45 seconds
+            }
         } catch (error) {
             console.error('Error setting up EventSource:', error);
             this.updateConnectionStatus(`❌ Connection error - ${error.message}`, false);
+            
+            // Try to reconnect after error
+            if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                this.reconnectAttempts++;
+                const delay = Math.min(30000, this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1));
+                this.reconnectTimeout = setTimeout(() => {
+                    this.connectToRealTimeUpdates();
+                }, delay);
+            }
         }
     }
 
@@ -573,6 +635,8 @@ class SmartHomeDashboard {
         if (cameraSettingsBtn) {
             cameraSettingsBtn.addEventListener('click', () => this.openCameraSettings());
         }
+
+
     }
 
     setupLightingControls() {
@@ -1082,10 +1146,18 @@ class SmartHomeDashboard {
 
     getLightName(deviceId) {
         switch (String(deviceId)) {
+            case '1': return 'Kitchen Light 1';
+            case '2': return 'Kitchen Light 2';
+            case '3': return 'Kitchen Light 3';
+            case '4': return 'Kitchen Light 4';
+            case '5': return 'Kitchen Light 5';
+            case '6': return 'Kitchen Light 6';
+            case '7': return 'Kitchen Light 7';
+            case '8': return 'Kitchen Light 8';
             case '9': return 'Sink 1';
             case '10': return 'Sink 2';
             case '11': return 'Entryway';
-            default: return 'Unknown Light';
+            default: return `Hue Light ${deviceId}`;
         }
     }
 
@@ -3317,15 +3389,17 @@ class SmartHomeDashboard {
     openCreditCardManager() {
         try {
             console.log('Opening Credit Card Manager...');
-            // Open the credit card manager via HTTP server
-            const creditCardUrl = 'http://localhost:8083/creditcard/index.html';
+            // Open the credit card manager via HTTP server - use current hostname/IP for network access
+            const currentHost = window.location.hostname;
+            const currentPort = window.location.port || '8083';
+            const creditCardUrl = `http://${currentHost}:${currentPort}/creditcard/index.html`;
             const newWindow = window.open(creditCardUrl, 'creditcard-manager', 'width=1200,height=800,scrollbars=yes,resizable=yes');
 
             if (newWindow) {
                 this.showSuccess('Credit Card Manager opened in new window');
             } else {
                 // Fallback if popup is blocked
-                this.showError('Popup blocked. Please navigate to: http://localhost:8083/creditcard/index.html');
+                this.showError(`Popup blocked. Please navigate to: ${creditCardUrl}`);
                 // Try to copy to clipboard as fallback
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(creditCardUrl).then(() => {
@@ -3337,22 +3411,26 @@ class SmartHomeDashboard {
             }
         } catch (error) {
             console.error('Error opening Credit Card Manager:', error);
-            this.showError('Failed to open Credit Card Manager. Please navigate to: http://localhost:8083/creditcard/index.html');
+            const currentHost = window.location.hostname;
+            const currentPort = window.location.port || '8083';
+            this.showError(`Failed to open Credit Card Manager. Please navigate to: http://${currentHost}:${currentPort}/creditcard/index.html`);
         }
     }
 
     openCreditCardSummary() {
         try {
             console.log('Opening Credit Card Summary...');
-            // Open the credit card summary via HTTP server
-            const summaryUrl = 'http://localhost:8083/creditcard/summary.html';
+            // Open the credit card summary via HTTP server - use current hostname/IP for network access
+            const currentHost = window.location.hostname;
+            const currentPort = window.location.port || '8083';
+            const summaryUrl = `http://${currentHost}:${currentPort}/creditcard/summary.html`;
             const newWindow = window.open(summaryUrl, 'creditcard-summary', 'width=1200,height=800,scrollbars=yes,resizable=yes');
 
             if (newWindow) {
                 this.showSuccess('Credit Card Summary opened in new window');
             } else {
                 // Fallback if popup is blocked
-                this.showError('Popup blocked. Please navigate to: http://localhost:8083/creditcard/summary.html');
+                this.showError(`Popup blocked. Please navigate to: ${summaryUrl}`);
                 // Try to copy to clipboard as fallback
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(summaryUrl).then(() => {
@@ -3364,22 +3442,26 @@ class SmartHomeDashboard {
             }
         } catch (error) {
             console.error('Error opening Credit Card Summary:', error);
-            this.showError('Failed to open Credit Card Summary. Please navigate to: http://localhost:8083/creditcard/summary.html');
+            const currentHost = window.location.hostname;
+            const currentPort = window.location.port || '8083';
+            this.showError(`Failed to open Credit Card Summary. Please navigate to: http://${currentHost}:${currentPort}/creditcard/summary.html`);
         }
     }
 
     openCreditCardInput() {
         try {
             console.log('Opening Credit Card Input...');
-            // Open the credit card input via HTTP server
-            const inputUrl = 'http://localhost:8083/creditcard/input.html';
+            // Open the credit card input via HTTP server - use current hostname/IP for network access
+            const currentHost = window.location.hostname;
+            const currentPort = window.location.port || '8083';
+            const inputUrl = `http://${currentHost}:${currentPort}/creditcard/input.html`;
             const newWindow = window.open(inputUrl, 'creditcard-input', 'width=1000,height=700,scrollbars=yes,resizable=yes');
 
             if (newWindow) {
                 this.showSuccess('Credit Card Input opened in new window');
             } else {
                 // Fallback if popup is blocked
-                this.showError('Popup blocked. Please navigate to: http://localhost:8083/creditcard/input.html');
+                this.showError(`Popup blocked. Please navigate to: ${inputUrl}`);
                 // Try to copy to clipboard as fallback
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(inputUrl).then(() => {
@@ -3391,7 +3473,9 @@ class SmartHomeDashboard {
             }
         } catch (error) {
             console.error('Error opening Credit Card Input:', error);
-            this.showError('Failed to open Credit Card Input. Please navigate to: http://localhost:8083/creditcard/input.html');
+            const currentHost = window.location.hostname;
+            const currentPort = window.location.port || '8083';
+            this.showError(`Failed to open Credit Card Input. Please navigate to: http://${currentHost}:${currentPort}/creditcard/input.html`);
         }
     }
 
@@ -3759,7 +3843,7 @@ class SmartHomeDashboard {
             });
 
             if (response.ok) {
-                const lightName = lightId === '1' ? 'Kitchen Light 1' : 'Kitchen Light 2';
+                const lightName = this.getLightName(lightId);
                 this.showSuccess(`${lightName} turned off`);
                 this.updateHueLightStatus(lightId);
             } else {
@@ -3767,8 +3851,9 @@ class SmartHomeDashboard {
             }
         } catch (error) {
             console.error(`Error turning off Hue light ${lightId}:`, error);
-            const lightName = lightId === '1' ? 'Kitchen Light 1' : 'Kitchen Light 2';
+            const lightName = this.getLightName(lightId);
             this.showError(`Failed to turn off ${lightName}`);
+            throw error; // Re-throw to allow retry logic in group functions
         }
     }
 
@@ -4351,11 +4436,13 @@ class SmartHomeDashboard {
             this.showError(`Failed to control Zidoo power: ${action}`);
         }
     }
+
+
 }
 
 // HLS camera initialization
 function initializeHLSPlayers() {
-    const cameras = [2, 3, 5, 8];
+    const cameras = [1, 2, 3, 4];
     
     cameras.forEach((channel, index) => {
         setTimeout(() => {

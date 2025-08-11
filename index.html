@@ -215,8 +215,25 @@
             <div class="tab-content" id="camera-content">
                     <!-- Camera Grid -->
                     <div class="camera-grid">
+                        <div class="card camera-card compact" id="camera-1">
+                            <h3>📹 Front Door Camera</h3>
+                            <div class="camera-display">
+                                <video id="camera-1-video" controls muted autoplay style="width: 100%; height: auto;">
+                                    <source src="/camera/1/stream" type="application/x-mpegURL">
+                                    Your browser does not support HLS video.
+                                </video>
+                                <div class="camera-status">
+                                    <span>Status: <span id="camera-1-status">Live</span></span>
+                                    <span>Channel: 1</span>
+                                </div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="camera-btn" id="camera-1-toggle">🔄 Refresh</button>
+                            </div>
+                        </div>
+                        
                         <div class="card camera-card compact" id="camera-2">
-                            <h3>📹 Back Yard Camera</h3>
+                            <h3>📹 Front Right Camera</h3>
                             <div class="camera-display">
                                 <video id="camera-2-video" controls muted autoplay style="width: 100%; height: auto;">
                                     <source src="/camera/2/stream" type="application/x-mpegURL">
@@ -233,7 +250,7 @@
                         </div>
                         
                         <div class="card camera-card compact" id="camera-3">
-                            <h3>📹 Driveway Camera</h3>
+                            <h3>📹 Front Left Camera</h3>
                             <div class="camera-display">
                                 <video id="camera-3-video" controls muted autoplay style="width: 100%; height: auto;">
                                     <source src="/camera/3/stream" type="application/x-mpegURL">
@@ -249,39 +266,23 @@
                             </div>
                         </div>
                         
-                        <div class="card camera-card compact" id="camera-5">
-                            <h3>📹 Side Gate Camera</h3>
+                        <div class="card camera-card compact" id="camera-4">
+                            <h3>📹 Office Camera</h3>
                             <div class="camera-display">
-                                <video id="camera-5-video" controls muted autoplay style="width: 100%; height: auto;">
-                                    <source src="/camera/5/stream" type="application/x-mpegURL">
+                                <video id="camera-4-video" controls muted autoplay style="width: 100%; height: auto;">
+                                    <source src="/camera/4/stream" type="application/x-mpegURL">
                                     Your browser does not support HLS video.
                                 </video>
                                 <div class="camera-status">
-                                    <span>Status: <span id="camera-5-status">Live</span></span>
-                                    <span>Channel: 5</span>
+                                    <span>Status: <span id="camera-4-status">Live</span></span>
+                                    <span>Channel: 4</span>
                                 </div>
                             </div>
                             <div class="camera-controls">
-                                <button class="camera-btn" id="camera-5-toggle">🔄 Refresh</button>
+                                <button class="camera-btn" id="camera-4-toggle">🔄 Refresh</button>
                             </div>
                         </div>
                         
-                        <div class="card camera-card compact" id="camera-8">
-                            <h3>📹 Front Door Camera</h3>
-                            <div class="camera-display">
-                                <video id="camera-8-video" controls muted autoplay style="width: 100%; height: auto;">
-                                    <source src="/camera/8/stream" type="application/x-mpegURL">
-                                    Your browser does not support HLS video.
-                                </video>
-                                <div class="camera-status">
-                                    <span>Status: <span id="camera-8-status">Live</span></span>
-                                    <span>Channel: 8</span>
-                                </div>
-                            </div>
-                            <div class="camera-controls">
-                                <button class="camera-btn" id="camera-8-toggle">🔄 Refresh</button>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Camera System Controls -->
@@ -298,6 +299,7 @@
                             <button class="system-btn" id="refresh-all-cameras">🔄 Refresh All</button>
                             <button class="system-btn" id="snapshot-all-cameras">📸 Snapshot All</button>
                             <button class="system-btn" id="discover-cameras">🔍 Discover Cameras</button>
+                            <button class="system-btn" onclick="window.open('https://ring.com/account/dashboard', '_blank')">📱 Ring Camera</button>
                         </div>
                         <div class="recording-controls">
                             <h3>Recording Controls</h3>

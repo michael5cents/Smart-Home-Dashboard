@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Credit Cards</title>
+</head>
+<body>
+    <h1>Credit Card Data Test</h1>
+    <button onclick="testLoad()">Test Load Credit Card Data</button>
+    <div id="results" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace;"></div>
+
+    <script>
+        function log(msg) {
+            document.getElementById('results').textContent += msg + '\n';
+            console.log(msg);
+        }
+
+        async function testLoad() {
+            document.getElementById('results').textContent = '';
+            log('=== TESTING CREDIT CARD DATA LOADING ===\n');
+
+            // 1. Check localStorage
+            log('1. Checking localStorage...');
+            const stored = localStorage.getItem('creditCards');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    log(`   ✅ Found ${parsed.length} cards in localStorage`);
+                    log(`   First card: ${parsed[0]?.cardName}`);
+                } catch (e) {
+                    log(`   ❌ Error parsing localStorage: ${e.message}`);
+                }
+            } else {
+                log('   ❌ No data in localStorage');
+            }
+
+            // 2. Test file loading
+            log('\n2. Testing file loading...');
+            const files = [
+                '/credit-cards-2025-07-01-20-50.json',
+                '/credit-card-data-2025-06-25.json'
+            ];
+
+            for (const file of files) {
+                try {
+                    log(`   Trying: ${file}`);
+                    const response = await fetch(file);
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        let cards = [];
+                        if (Array.isArray(data)) {
+                            cards = data;
+                            log(`   ✅ Loaded ${cards.length} cards (direct array)`);
+                        } else if (data.cards && Array.isArray(data.cards)) {
+                            cards = data.cards;
+                            log(`   ✅ Loaded ${cards.length} cards (object.cards)`);
+                        } else {
+                            log(`   ❌ Invalid structure`);
+                            continue;
+                        }
+
+                        // Show sample card
+                        if (cards.length > 0) {
+                            const card = cards[0];
+                            log(`   Sample card: ${card.cardName} - Balance: $${card.balance}`);
+                            
+                            // Test saving to localStorage
+                            localStorage.setItem('creditCards', JSON.stringify(cards));
+                            log(`   ✅ Saved to localStorage`);
+                            break;
+                        }
+                    } else {
+                        log(`   ❌ ${response.status} ${response.statusText}`);
+                    }
+                } catch (error) {
+                    log(`   ❌ Error: ${error.message}`);
+                }
+            }
+
+            // 3. Test element existence
+            log('\n3. Testing DOM elements...');
+            const elements = [
+                'cc-total-balance',
+                'cc-total-credit', 
+                'cc-available-credit',
+                'creditcard-grid'
+            ];
+
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                log(`   ${id}: ${el ? '✅ Found' : '❌ Missing'}`);
+            });
+
+            log('\n=== TEST COMPLETE ===');
+        }
+    </script>
+</body>
+</html>

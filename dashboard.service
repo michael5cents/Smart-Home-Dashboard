@@ -1,0 +1,26 @@
+[Unit]
+Description=Smart Home Dashboard Server
+After=network.target
+Wants=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=michael5cents
+Group=michael5cents
+WorkingDirectory=/home/michael5cents/dashboard
+ExecStart=/home/michael5cents/.nvm/versions/node/v22.17.1/bin/node dashboard-server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dashboard
+Environment=NODE_ENV=production
+Environment=PATH=/home/michael5cents/.nvm/versions/node/v22.17.1/bin:/usr/bin:/bin:/usr/local/bin
+
+# Resource limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

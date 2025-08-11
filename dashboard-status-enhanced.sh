@@ -31,7 +31,7 @@ if [[ -x "$CONTROL_SCRIPT" ]]; then
     LOAD_LINE=$(echo "$STATUS_OUTPUT" | grep "Load Average:" | head -1)
     
     # Create summary notification
-    SUMMARY="Dashboard Server: $SERVER_STATUS\n📷 Active Cameras: $CAMERA_COUNT/4\n\n$LOAD_LINE\n\n🔗 Local: http://localhost:8083\n🌐 LAN: http://192.168.68.121:8083"
+    SUMMARY="Dashboard Server: $SERVER_STATUS\n📷 Active Cameras: $CAMERA_COUNT/4\n\n$LOAD_LINE\n\n🔗 Local: http://localhost:8083\n🌐 LAN: http://192.168.68.97:8083"
     
     notify-send "Dashboard Status" "$SUMMARY" --icon="$ICON" --expire-time=10000
     
@@ -48,7 +48,7 @@ else
         echo "✅ Dashboard Server: RUNNING"
         echo "   PIDs: $DASHBOARD_PIDS"
         echo "   Local: http://localhost:8083"
-        echo "   LAN: http://192.168.68.121:8083"
+        echo "   LAN: http://192.168.68.97:8083"
         SERVER_STATUS="✅ RUNNING"
         ICON="dialog-information"
     else
@@ -76,7 +76,7 @@ else
     echo "   Load Average: $LOAD_AVG"
     
     # Create summary notification
-    SUMMARY="Dashboard Server: $SERVER_STATUS\n📷 Active Cameras: $CAMERA_COUNT/4\n📊 Load Average: $LOAD_AVG\n\n🔗 Local: http://localhost:8083\n🌐 LAN: http://192.168.68.121:8083"
+    SUMMARY="Dashboard Server: $SERVER_STATUS\n📷 Active Cameras: $CAMERA_COUNT/4\n📊 Load Average: $LOAD_AVG\n\n🔗 Local: http://localhost:8083\n🌐 LAN: http://192.168.68.97:8083"
     
     notify-send "Dashboard Status" "$SUMMARY" --icon="$ICON" --expire-time=10000
 fi

@@ -1835,6 +1835,8 @@ let clientIdCounter = 0;
 const SSE_HEARTBEAT_INTERVAL = 30000; // 30 seconds
 const SSE_CONNECTION_TIMEOUT = 60000; // 60 seconds
 const MAX_SSE_CLIENTS = 10; // Limit concurrent connections
+const SSE_CLEANUP_INTERVAL = 15000; // Clean up every 15 seconds
+const CONNECTION_GRACE_PERIOD = 5000; // 5 seconds grace for reconnection
 
 // Function to send heartbeat to SSE clients
 function sendSSEHeartbeat(client) {
@@ -1848,23 +1850,58 @@ function sendSSEHeartbeat(client) {
     }
 }
 
-// Clean up stale SSE connections
+// Enhanced garbage collection for SSE connections
 function cleanupStaleSSEConnections() {
     const now = Date.now();
     const staleClients = [];
+    const deadClients = [];
+    const ipMap = new Map(); // Track connections per IP
     
+    // First pass: identify stale and dead connections
     sseClients.forEach((client, id) => {
+        // Check if connection is dead (socket destroyed)
+        if (client.res.destroyed || client.res.finished || !client.res.socket) {
+            deadClients.push(id);
+            return;
+        }
+        
+        // Check if connection is stale (timeout)
         if (now - client.lastHeartbeat > SSE_CONNECTION_TIMEOUT) {
             staleClients.push(id);
+            return;
         }
+        
+        // Track connections per IP for duplicate detection
+        const ip = client.ip;
+        if (!ipMap.has(ip)) {
+            ipMap.set(ip, []);
+        }
+        ipMap.get(ip).push({ id, client, connectedAt: client.connectedAt });
     });
     
+    // Remove dead connections immediately
+    deadClients.forEach(id => {
+        console.log(`Removing dead SSE client: ${id}`);
+        try {
+            const client = sseClients.get(id);
+            if (client && client.res && !client.res.destroyed) {
+                client.res.end();
+            }
+        } catch (e) {
+            // Ignore errors during cleanup
+        }
+        sseClients.delete(id);
+    });
+    
+    // Remove stale connections
     staleClients.forEach(id => {
         const client = sseClients.get(id);
         if (client) {
-            console.log('Removing stale SSE client:', id);
+            console.log(`Removing stale SSE client: ${id} (IP: ${client.ip}, timeout: ${now - client.lastHeartbeat}ms)`);
             try {
-                client.res.end();
+                if (client.res && !client.res.destroyed) {
+                    client.res.end();
+                }
             } catch (e) {
                 // Connection already closed
             }
@@ -1872,12 +1909,60 @@ function cleanupStaleSSEConnections() {
         }
     });
     
-    if (staleClients.length > 0) {
-        console.log(`Cleaned up ${staleClients.length} stale connections. Active clients: ${sseClients.size}`);
+    // Remove duplicate connections from same IP (keep newest)
+    let duplicatesRemoved = 0;
+    ipMap.forEach((connections, ip) => {
+        if (connections.length > 1) {
+            // Sort by connection time (newest first)
+            connections.sort((a, b) => b.connectedAt - a.connectedAt);
+            
+            // Keep only the newest connection, remove others
+            for (let i = 1; i < connections.length; i++) {
+                const oldConn = connections[i];
+                console.log(`Removing duplicate SSE connection from ${ip}: ID ${oldConn.id}`);
+                try {
+                    if (oldConn.client.res && !oldConn.client.res.destroyed) {
+                        oldConn.client.res.write('event: duplicate\ndata: {"message": "Closing duplicate connection"}\n\n');
+                        oldConn.client.res.end();
+                    }
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+                sseClients.delete(oldConn.id);
+                duplicatesRemoved++;
+            }
+        }
+    });
+    
+    const totalCleaned = deadClients.length + staleClients.length + duplicatesRemoved;
+    if (totalCleaned > 0) {
+        console.log(`🧹 SSE Garbage Collection: Removed ${deadClients.length} dead, ${staleClients.length} stale, ${duplicatesRemoved} duplicate connections. Active: ${sseClients.size}`);
+    }
+    
+    // If still at max capacity after cleanup, force remove oldest connections
+    if (sseClients.size >= MAX_SSE_CLIENTS) {
+        const allClients = Array.from(sseClients.entries())
+            .map(([id, client]) => ({ id, client, connectedAt: client.connectedAt }))
+            .sort((a, b) => a.connectedAt - b.connectedAt); // Oldest first
+        
+        const toRemove = sseClients.size - Math.floor(MAX_SSE_CLIENTS * 0.8); // Keep only 80% capacity
+        for (let i = 0; i < toRemove && i < allClients.length; i++) {
+            const { id, client } = allClients[i];
+            console.log(`Force removing oldest SSE client to free capacity: ${id}`);
+            try {
+                if (client.res && !client.res.destroyed) {
+                    client.res.write('event: capacity\ndata: {"message": "Connection closed due to capacity"}\n\n');
+                    client.res.end();
+                }
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+            sseClients.delete(id);
+        }
     }
 }
 
-// Start heartbeat and cleanup interval
+// Start heartbeat interval
 setInterval(() => {
     const deadClients = [];
     sseClients.forEach((client, id) => {
@@ -1890,9 +1975,27 @@ setInterval(() => {
         console.log('Removing dead client:', id);
         sseClients.delete(id);
     });
-    
-    cleanupStaleSSEConnections();
 }, SSE_HEARTBEAT_INTERVAL);
+
+// Start aggressive cleanup interval (runs more frequently)
+setInterval(() => {
+    cleanupStaleSSEConnections();
+    
+    // Log current connection status
+    if (sseClients.size > 0) {
+        const ipCounts = new Map();
+        sseClients.forEach((client) => {
+            const ip = client.ip;
+            ipCounts.set(ip, (ipCounts.get(ip) || 0) + 1);
+        });
+        
+        let statusMsg = `📊 SSE Status: ${sseClients.size} connections`;
+        ipCounts.forEach((count, ip) => {
+            statusMsg += ` | ${ip}: ${count}`;
+        });
+        console.log(statusMsg);
+    }
+}, SSE_CLEANUP_INTERVAL);
 
 // Function to trigger server restart when max SSE clients reached
 function triggerServerRestart() {
@@ -2125,18 +2228,25 @@ const server = http.createServer(async (req, res) => {
 
         // Server-Sent Events endpoint for real-time updates
         if (url.pathname === '/api/events') {
-            // Check if we've reached the maximum number of clients
+            // Run garbage collection before checking limits
+            cleanupStaleSSEConnections();
+            
+            // Check if we've reached the maximum number of clients after cleanup
             if (sseClients.size >= MAX_SSE_CLIENTS) {
-                console.warn('Maximum SSE clients reached, triggering server restart');
-                res.writeHead(503, { 'Content-Type': 'text/plain' });
-                res.end('Server restarting due to connection limit - please retry in 10 seconds');
+                console.warn('Maximum SSE clients reached after cleanup, triggering aggressive cleanup');
                 
-                // Trigger server restart after a brief delay to allow response
-                setTimeout(() => {
-                    console.log('Initiating automatic restart due to max SSE clients reached');
-                    triggerServerRestart();
-                }, 1000);
-                return;
+                // Try one more aggressive cleanup
+                cleanupStaleSSEConnections();
+                
+                if (sseClients.size >= MAX_SSE_CLIENTS) {
+                    console.warn('Still at max capacity, rejecting connection temporarily');
+                    res.writeHead(503, { 
+                        'Content-Type': 'text/plain',
+                        'Retry-After': '5'
+                    });
+                    res.end('Server at capacity - please retry in 5 seconds');
+                    return;
+                }
             }
             
             res.writeHead(200, {
