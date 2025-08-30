@@ -2,14 +2,25 @@
 
 A comprehensive, real-time Smart Home Dashboard with Hubitat integration, multi-device control, and advanced auto-healing capabilities. Control your entire smart home ecosystem from a single, responsive dashboard with bulletproof connection reliability.
 
-## 🚀 Latest Update (v2.2.2) - Automatic SSE Restart System
+## 🚀 Latest Update (v2.2.3) - Enhanced SSE Monitoring & Climate Page Fix
 
-### ⚡ Intelligent Connection Management (August 10, 2025)
-- **Auto-Restart on Connection Limits**: When SSE client limit (10) is reached, server automatically restarts instead of permanently blocking connections
-- **Climate Control Continuity**: Ensures continuous polling devices (thermostats, sensors) can always reconnect after restart
-- **Self-Healing Architecture**: Prevents permanent connection deadlocks that previously required manual intervention
-- **Graceful Recovery**: Notifies all connected clients before restart, minimizing disruption to active sessions
-- **Enhanced Reliability**: Critical for climate control systems that require constant connectivity
+### ⚡ Intelligent SSE Connection Management (August 30, 2025)
+- **Resolved Climate Page Display Issues**: Fixed weather and sensor data not displaying due to aggressive SSE garbage collection
+- **Smart Cleanup Algorithm**: Only removes truly dead connections (destroyed sockets), not active data transfers
+- **Emergency-Only Cleanup**: Aggressive cleanup only triggers at 80% capacity (40+ connections)
+- **Higher Connection Capacity**: Increased from 20 to 50 concurrent SSE connections for short-lived client patterns
+- **Grace Period Protection**: 30-second grace period after data send, 5-second reconnection grace
+- **Reduced Cleanup Frequency**: Cleanup intervals increased from 30 seconds to 2 minutes
+- **Cache Optimization**: Improved globalData cache prevents redundant API calls
+- **Real-Time Data Validation**: All APIs confirmed working (Weather: 75°F, Sensors: 74°F/80°F)
+
+### 🌡️ Climate Page Reliability (August 30, 2025)
+- **Weather Data**: OpenWeatherMap integration via Hubitat device ID 33
+- **Master Bedroom Sensor**: Ecobee sensor via Hubitat device ID 742
+- **Game Room Sensor**: Ecobee sensor via Hubitat device ID 741
+- **Data Flow Validation**: Complete backend-to-frontend data delivery confirmed
+- **SSE Optimization**: Fixed race condition between garbage collection and data fetch
+- **Timeout Management**: 15-second timeouts for weather/sensor fetches, 8-second for locks
 
 ### 📹 Previous Update (v2.2.1) - Low Latency Streaming
 - **66% Latency Reduction**: Camera delay reduced from 9-10 seconds to 3-4 seconds

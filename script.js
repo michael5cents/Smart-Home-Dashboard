@@ -185,7 +185,7 @@ class SmartHomeDashboard {
                 this.reconnectAttempts = 0;
                 this.reconnectDelay = 1000;
                 this.lastSSEActivity = Date.now();
-                this.updateConnectionStatus('✅ Connected', true);
+                this.updateConnectionStatus('✅ Connected to Living Room Ecobee', true);
             };
 
             this.eventSource.onmessage = (event) => {
@@ -201,6 +201,14 @@ class SmartHomeDashboard {
                     
                     const data = JSON.parse(event.data);
                     console.log('Real-time data received:', data);
+                    console.log('FRONTEND: Parsed SSE data:', {
+                        hasThermostat: !!data.thermostat,
+                        hasWeather: !!data.weather,
+                        hasSensors: !!data.sensors,
+                        weatherTemp: data.weather?.temperature,
+                        masterBedroom: data.sensors?.masterBedroom?.temperature,
+                        gameRoom: data.sensors?.gameRoom?.temperature
+                    });
                     this.processRealtimeData(data);
                 } catch (error) {
                     console.error('Error processing real-time data:', error);

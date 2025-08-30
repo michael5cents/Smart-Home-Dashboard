@@ -1831,17 +1831,29 @@ let lastDataHash = '';
 let sseClients = new Map(); // Use Map for better client tracking
 let clientIdCounter = 0;
 
-// SSE connection management settings
-const SSE_HEARTBEAT_INTERVAL = 30000; // 30 seconds
-const SSE_CONNECTION_TIMEOUT = 60000; // 60 seconds
-const MAX_SSE_CLIENTS = 10; // Limit concurrent connections
-const SSE_CLEANUP_INTERVAL = 15000; // Clean up every 15 seconds
+// Global data cache for dashboard state
+let globalData = {
+    thermostat: null,
+    locks: null,
+    weather: null,
+    sensors: null,
+    lastUpdate: 0
+};
+
+// SSE connection management settings - INTELLIGENT MONITORING
+const SSE_HEARTBEAT_INTERVAL = 120000; // 2 minutes - less aggressive
+const SSE_CONNECTION_TIMEOUT = 180000; // 3 minutes - longer grace period  
+const MAX_SSE_CLIENTS = 50; // Higher limit since connections are short-lived
+const SSE_CLEANUP_INTERVAL = 120000; // Clean up every 2 minutes - much less aggressive
+const SSE_EMERGENCY_THRESHOLD = 40; // Emergency cleanup at 80% capacity
+const SSE_DATA_GRACE_PERIOD = 30000; // 30 seconds grace after sending data
 const CONNECTION_GRACE_PERIOD = 5000; // 5 seconds grace for reconnection
 
 // Function to send heartbeat to SSE clients
 function sendSSEHeartbeat(client) {
     try {
-        client.res.write(':heartbeat\n\n');
+        // Send heartbeat as actual data that triggers onmessage
+        client.res.write('data: :heartbeat\n\n');
         client.lastHeartbeat = Date.now();
         return true;
     } catch (error) {
@@ -1850,38 +1862,38 @@ function sendSSEHeartbeat(client) {
     }
 }
 
-// Enhanced garbage collection for SSE connections
+// Intelligent SSE connection monitoring - SAFE CLEANUP
 function cleanupStaleSSEConnections() {
     const now = Date.now();
-    const staleClients = [];
     const deadClients = [];
-    const ipMap = new Map(); // Track connections per IP
+    const emergencyClients = [];
     
-    // First pass: identify stale and dead connections
+    console.log(`🔍 SSE Cleanup: Monitoring ${sseClients.size}/${MAX_SSE_CLIENTS} connections`);
+    
+    // First pass: only remove truly dead connections
     sseClients.forEach((client, id) => {
-        // Check if connection is dead (socket destroyed)
-        if (client.res.destroyed || client.res.finished || !client.res.socket) {
+        // Only clean up if socket is actually destroyed/finished
+        if (client.res.destroyed || client.res.finished) {
             deadClients.push(id);
             return;
         }
         
-        // Check if connection is stale (timeout)
-        if (now - client.lastHeartbeat > SSE_CONNECTION_TIMEOUT) {
-            staleClients.push(id);
-            return;
+        // Emergency cleanup only if at critical capacity
+        if (sseClients.size >= SSE_EMERGENCY_THRESHOLD) {
+            // Only remove if connection is very old AND hasn't sent data recently
+            const connectionAge = now - client.connectedAt;
+            const timeSinceLastData = now - client.lastHeartbeat;
+            
+            if (connectionAge > SSE_CONNECTION_TIMEOUT && 
+                timeSinceLastData > SSE_DATA_GRACE_PERIOD) {
+                emergencyClients.push(id);
+            }
         }
-        
-        // Track connections per IP for duplicate detection
-        const ip = client.ip;
-        if (!ipMap.has(ip)) {
-            ipMap.set(ip, []);
-        }
-        ipMap.get(ip).push({ id, client, connectedAt: client.connectedAt });
     });
     
-    // Remove dead connections immediately
+    // Remove dead connections immediately  
     deadClients.forEach(id => {
-        console.log(`Removing dead SSE client: ${id}`);
+        console.log(`🗑️ Removing dead SSE client: ${id} (socket destroyed)`);
         try {
             const client = sseClients.get(id);
             if (client && client.res && !client.res.destroyed) {
@@ -1893,11 +1905,11 @@ function cleanupStaleSSEConnections() {
         sseClients.delete(id);
     });
     
-    // Remove stale connections
-    staleClients.forEach(id => {
+    // Emergency cleanup only at critical capacity
+    emergencyClients.forEach(id => {
         const client = sseClients.get(id);
         if (client) {
-            console.log(`Removing stale SSE client: ${id} (IP: ${client.ip}, timeout: ${now - client.lastHeartbeat}ms)`);
+            console.log(`⚠️ Emergency cleanup SSE client: ${id} (IP: ${client.ip}, age: ${Math.round((now - client.connectedAt)/1000)}s)`);
             try {
                 if (client.res && !client.res.destroyed) {
                     client.res.end();
@@ -1909,92 +1921,37 @@ function cleanupStaleSSEConnections() {
         }
     });
     
-    // Remove duplicate connections from same IP (keep newest)
-    let duplicatesRemoved = 0;
-    ipMap.forEach((connections, ip) => {
-        if (connections.length > 1) {
-            // Sort by connection time (newest first)
-            connections.sort((a, b) => b.connectedAt - a.connectedAt);
-            
-            // Keep only the newest connection, remove others
-            for (let i = 1; i < connections.length; i++) {
-                const oldConn = connections[i];
-                console.log(`Removing duplicate SSE connection from ${ip}: ID ${oldConn.id}`);
-                try {
-                    if (oldConn.client.res && !oldConn.client.res.destroyed) {
-                        oldConn.client.res.write('event: duplicate\ndata: {"message": "Closing duplicate connection"}\n\n');
-                        oldConn.client.res.end();
-                    }
-                } catch (e) {
-                    // Ignore cleanup errors
-                }
-                sseClients.delete(oldConn.id);
-                duplicatesRemoved++;
-            }
-        }
-    });
-    
-    const totalCleaned = deadClients.length + staleClients.length + duplicatesRemoved;
+    const totalCleaned = deadClients.length + emergencyClients.length;
     if (totalCleaned > 0) {
-        console.log(`🧹 SSE Garbage Collection: Removed ${deadClients.length} dead, ${staleClients.length} stale, ${duplicatesRemoved} duplicate connections. Active: ${sseClients.size}`);
-    }
-    
-    // If still at max capacity after cleanup, force remove oldest connections
-    if (sseClients.size >= MAX_SSE_CLIENTS) {
-        const allClients = Array.from(sseClients.entries())
-            .map(([id, client]) => ({ id, client, connectedAt: client.connectedAt }))
-            .sort((a, b) => a.connectedAt - b.connectedAt); // Oldest first
-        
-        const toRemove = sseClients.size - Math.floor(MAX_SSE_CLIENTS * 0.8); // Keep only 80% capacity
-        for (let i = 0; i < toRemove && i < allClients.length; i++) {
-            const { id, client } = allClients[i];
-            console.log(`Force removing oldest SSE client to free capacity: ${id}`);
-            try {
-                if (client.res && !client.res.destroyed) {
-                    client.res.write('event: capacity\ndata: {"message": "Connection closed due to capacity"}\n\n');
-                    client.res.end();
-                }
-            } catch (e) {
-                // Ignore cleanup errors
-            }
-            sseClients.delete(id);
-        }
+        console.log(`🧹 SSE Safe Cleanup: Removed ${deadClients.length} dead, ${emergencyClients.length} emergency. Active: ${sseClients.size}/${MAX_SSE_CLIENTS}`);
+    } else if (sseClients.size > 10) {
+        console.log(`✅ SSE Health: ${sseClients.size}/${MAX_SSE_CLIENTS} active connections`);
     }
 }
 
-// Start heartbeat interval
+// Intelligent SSE monitoring - SAFE for climate page
 setInterval(() => {
+    // Only send heartbeats to connections older than grace period
+    const now = Date.now();
     const deadClients = [];
     sseClients.forEach((client, id) => {
-        if (!sendSSEHeartbeat(client)) {
-            deadClients.push(id);
+        // Only heartbeat connections that have been active for a while
+        if (now - client.connectedAt > SSE_DATA_GRACE_PERIOD) {
+            if (!sendSSEHeartbeat(client)) {
+                deadClients.push(id);
+            }
         }
     });
     
     deadClients.forEach(id => {
-        console.log('Removing dead client:', id);
+        console.log('🗑️ Removing unresponsive client:', id);
         sseClients.delete(id);
     });
 }, SSE_HEARTBEAT_INTERVAL);
 
-// Start aggressive cleanup interval (runs more frequently)
+// Safe cleanup interval - protects climate page data flow
 setInterval(() => {
     cleanupStaleSSEConnections();
-    
-    // Log current connection status
-    if (sseClients.size > 0) {
-        const ipCounts = new Map();
-        sseClients.forEach((client) => {
-            const ip = client.ip;
-            ipCounts.set(ip, (ipCounts.get(ip) || 0) + 1);
-        });
-        
-        let statusMsg = `📊 SSE Status: ${sseClients.size} connections`;
-        ipCounts.forEach((count, ip) => {
-            statusMsg += ` | ${ip}: ${count}`;
-        });
-        console.log(statusMsg);
-    }
 }, SSE_CLEANUP_INTERVAL);
 
 // Function to trigger server restart when max SSE clients reached
@@ -2206,6 +2163,34 @@ const server = http.createServer(async (req, res) => {
             return;
         }
         
+        // Test endpoint to validate data structure
+        if (url.pathname === '/api/test-data') {
+            try {
+                const thermostatData = await getThermostatData();
+                const weatherData = await getWeatherData();
+                const masterBedroomSensor = await getEcobeeSensorData(742, 'Master Bedroom');
+                const gameRoomSensor = await getEcobeeSensorData(741, 'Game Room');
+                
+                const testData = {
+                    thermostat: thermostatData,
+                    weather: weatherData,
+                    sensors: {
+                        masterBedroom: masterBedroomSensor,
+                        gameRoom: gameRoomSensor
+                    },
+                    timestamp: new Date().toISOString()
+                };
+                
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(testData, null, 2));
+                return;
+            } catch (error) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: error.message }));
+                return;
+            }
+        }
+
         // Handle lightweight status check (for smart refresh)
         if (url.pathname === '/api/status') {
             const thermostatData = await getThermostatData();
@@ -2228,14 +2213,16 @@ const server = http.createServer(async (req, res) => {
 
         // Server-Sent Events endpoint for real-time updates
         if (url.pathname === '/api/events') {
-            // Run garbage collection before checking limits
-            cleanupStaleSSEConnections();
+            // Safe cleanup only if approaching capacity
+            if (sseClients.size >= SSE_EMERGENCY_THRESHOLD) {
+                cleanupStaleSSEConnections();
+            }
             
             // Check if we've reached the maximum number of clients after cleanup
             if (sseClients.size >= MAX_SSE_CLIENTS) {
                 console.warn('Maximum SSE clients reached after cleanup, triggering aggressive cleanup');
                 
-                // Try one more aggressive cleanup
+                // Safe emergency cleanup only
                 cleanupStaleSSEConnections();
                 
                 if (sseClients.size >= MAX_SSE_CLIENTS) {
@@ -2282,30 +2269,93 @@ const server = http.createServer(async (req, res) => {
                 return;
             }
 
-            // Send initial data
+            // Send initial data - use cached data to avoid multiple API calls
             try {
-                const thermostatData = await getThermostatData();
-                const lockDevices = await getSmartLocks();
+                // Check if we have recent cached data (use globalData if available and recent)
+                let thermostatData, lockDevices, weatherData = null;
                 
-                // Get weather data
-                let weatherData = null;
-                try {
-                    weatherData = await getWeatherData();
-                } catch (error) {
-                    console.error('Error fetching weather data for SSE:', error);
+                console.log('SSE: Checking globalData cache...', { 
+                    hasGlobalData: !!globalData, 
+                    hasThermostat: !!globalData?.thermostat, 
+                    lastUpdate: globalData?.lastUpdate, 
+                    cacheAge: globalData ? Date.now() - globalData.lastUpdate : 'N/A' 
+                });
+                
+                if (globalData && globalData.thermostat && (Date.now() - globalData.lastUpdate < 30000)) {
+                    // Use cached data if less than 30 seconds old
+                    console.log('SSE: Using cached data');
+                    thermostatData = globalData.thermostat;
+                    lockDevices = globalData.locks || [];
+                    weatherData = globalData.weather;
+                } else {
+                    // Only fetch fresh data if cache is stale or empty
+                    console.log('SSE: Fetching fresh data (cache stale or empty)');
+                    // Update heartbeat to prevent timeout during data fetch
+                    client.lastHeartbeat = Date.now();
+                    thermostatData = await getThermostatData();
+                    console.log('SSE: Thermostat data fetched, getting locks...');
+                    try {
+                        lockDevices = await Promise.race([
+                            getSmartLocks(),
+                            new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Lock fetch timeout')), 8000)
+                            )
+                        ]);
+                    } catch (error) {
+                        console.error('Lock fetch timed out for SSE:', error);
+                        lockDevices = [];
+                    }
+                    console.log('SSE: Lock data fetched, proceeding to weather...');
+                    // Update heartbeat again after thermostat/locks fetch
+                    client.lastHeartbeat = Date.now();
+                    
+                    try {
+                        console.log('SSE: Fetching weather data...');
+                        weatherData = await Promise.race([
+                            getWeatherData(),
+                            new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Weather fetch timeout')), 15000)
+                            )
+                        ]);
+                        console.log('SSE: Weather data fetched successfully:', weatherData?.temperature);
+                        // Update heartbeat after weather fetch
+                        client.lastHeartbeat = Date.now();
+                    } catch (error) {
+                        console.error('Error fetching weather data for SSE:', error);
+                        weatherData = null;
+                    }
                 }
                 
+                // Use cached sensor data if available and recent
                 let sensorData = null;
-                if (HUBITAT_CONFIG.masterBedroomSensorId && HUBITAT_CONFIG.gameRoomSensorId) {
+                if (globalData && globalData.sensors && (Date.now() - globalData.lastUpdate < 30000)) {
+                    sensorData = globalData.sensors;
+                } else if (HUBITAT_CONFIG.masterBedroomSensorId && HUBITAT_CONFIG.gameRoomSensorId) {
                     try {
-                        const masterBedroomSensor = await getEcobeeSensorData(HUBITAT_CONFIG.masterBedroomSensorId, 'Master Bedroom');
-                        const gameRoomSensor = await getEcobeeSensorData(HUBITAT_CONFIG.gameRoomSensorId, 'Game Room');
+                        const [masterBedroomSensor, gameRoomSensor] = await Promise.all([
+                            Promise.race([
+                                getEcobeeSensorData(HUBITAT_CONFIG.masterBedroomSensorId, 'Master Bedroom'),
+                                new Promise((_, reject) => 
+                                    setTimeout(() => reject(new Error('Master Bedroom sensor timeout')), 15000)
+                                )
+                            ]),
+                            Promise.race([
+                                getEcobeeSensorData(HUBITAT_CONFIG.gameRoomSensorId, 'Game Room'),
+                                new Promise((_, reject) => 
+                                    setTimeout(() => reject(new Error('Game Room sensor timeout')), 15000)
+                                )
+                            ])
+                        ]);
                         sensorData = {
                             masterBedroom: masterBedroomSensor,
                             gameRoom: gameRoomSensor
                         };
+                        console.log('SSE: Sensor data fetched successfully');
+                        // Update heartbeat after sensor fetch
+                        client.lastHeartbeat = Date.now();
                     } catch (error) {
                         console.error('Error fetching sensor data:', error);
+                        sensorData = null;
                     }
                 }
                 
@@ -2317,6 +2367,24 @@ const server = http.createServer(async (req, res) => {
                     timestamp: new Date().toISOString()
                 };
                 
+                // Update globalData cache with fresh data
+                if (thermostatData || weatherData || sensorData) {
+                    globalData.thermostat = thermostatData;
+                    globalData.locks = lockDevices;
+                    globalData.weather = weatherData;
+                    globalData.sensors = sensorData;
+                    globalData.lastUpdate = Date.now();
+                    console.log('SSE: Updated globalData cache');
+                }
+                
+                console.log('SSE: Sending complete data to client:', {
+                    hasThermostat: !!initialData.thermostat,
+                    hasWeather: !!initialData.weather,
+                    hasSensors: !!initialData.sensors,
+                    weatherTemp: initialData.weather?.temperature,
+                    masterBedroom: initialData.sensors?.masterBedroom?.temperature,
+                    gameRoom: initialData.sensors?.gameRoom?.temperature
+                });
                 res.write(`data: ${JSON.stringify(initialData)}\n\n`);
                 lastDataHash = JSON.stringify(initialData);
                 client.lastHeartbeat = Date.now();
@@ -3628,6 +3696,15 @@ async function monitorDataChanges() {
             timestamp: new Date().toISOString()
         };
         
+        // Update global data cache
+        globalData = {
+            thermostat: thermostatData,
+            locks: lockDevices,
+            sensors: sensorData,
+            weather: weatherData,
+            lastUpdate: Date.now()
+        };
+        
         // Broadcast data change to SSE clients (only if data actually changed)
         broadcastDataChange(currentData);
         
@@ -3637,6 +3714,8 @@ async function monitorDataChanges() {
 }
 
 // Start periodic monitoring every 30 seconds (much more efficient than 10-second polling)
+// Run immediately, then every 30 seconds
+monitorDataChanges();
 setInterval(monitorDataChanges, 30000);
 
 server.listen(PORT, '0.0.0.0', () => {
