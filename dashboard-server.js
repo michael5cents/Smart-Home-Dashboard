@@ -776,7 +776,7 @@ async function getEcobeeSensorData(deviceId, sensorName) {
         
         console.log(`Fetching ${sensorName} sensor data from:`, url);
         
-        http.get(url, (res) => {
+        const request = http.get(url, (res) => {
             let data = '';
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
@@ -803,7 +803,14 @@ async function getEcobeeSensorData(deviceId, sensorName) {
                     reject(error);
                 }
             });
-        }).on('error', reject);
+        });
+        
+        // Add timeout to the request
+        request.on('error', reject);
+        request.setTimeout(5000, () => {
+            request.destroy();
+            reject(new Error(`${sensorName} sensor request timeout after 5 seconds`));
+        });
     });
 }
 
@@ -2332,7 +2339,7 @@ const server = http.createServer(async (req, res) => {
                     sensorData = globalData.sensors;
                 } else if (HUBITAT_CONFIG.masterBedroomSensorId && HUBITAT_CONFIG.gameRoomSensorId) {
                     try {
-                        const [masterBedroomSensor, gameRoomSensor] = await Promise.all([
+                        const sensorResults = await Promise.allSettled([
                             Promise.race([
                                 getEcobeeSensorData(HUBITAT_CONFIG.masterBedroomSensorId, 'Master Bedroom'),
                                 new Promise((_, reject) => 
@@ -2346,11 +2353,28 @@ const server = http.createServer(async (req, res) => {
                                 )
                             ])
                         ]);
-                        sensorData = {
-                            masterBedroom: masterBedroomSensor,
-                            gameRoom: gameRoomSensor
-                        };
-                        console.log('SSE: Sensor data fetched successfully');
+                        
+                        // Process partial results even if one sensor fails
+                        sensorData = {};
+                        if (sensorResults[0].status === 'fulfilled') {
+                            sensorData.masterBedroom = sensorResults[0].value;
+                        } else {
+                            console.error('Master Bedroom sensor error:', sensorResults[0].reason);
+                        }
+                        
+                        if (sensorResults[1].status === 'fulfilled') {
+                            sensorData.gameRoom = sensorResults[1].value;
+                        } else {
+                            console.error('Game Room sensor error:', sensorResults[1].reason);
+                        }
+                        
+                        // Only set to null if both sensors failed
+                        if (!sensorData.masterBedroom && !sensorData.gameRoom) {
+                            sensorData = null;
+                        } else {
+                            console.log('SSE: Sensor data fetched (partial if one failed)');
+                        }
+                        
                         // Update heartbeat after sensor fetch
                         client.lastHeartbeat = Date.now();
                     } catch (error) {

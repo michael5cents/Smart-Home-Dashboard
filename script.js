@@ -4472,20 +4472,27 @@ function initializeHLSPlayers() {
                     manifestLoadingMaxRetry: 3
                 });
                 
-                hls.loadSource(`/camera/${channel}/stream`);
+                hls.loadSource(`/hls/camera${channel}/stream.m3u8`);
                 hls.attachMedia(video);
                 
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     console.log(`📹 Camera ${channel} HLS stream ready`);
                     const statusElem = document.getElementById(`camera-${channel}-status`);
-                    if (statusElem) statusElem.textContent = 'Connected';
+                    if (statusElem) statusElem.textContent = 'Online';
                     video.play().catch(e => console.log(`Camera ${channel} autoplay blocked:`, e));
+                });
+                
+                hls.on(Hls.Events.FRAG_LOADED, () => {
+                    const statusElem = document.getElementById(`camera-${channel}-status`);
+                    if (statusElem && statusElem.textContent !== 'Online') {
+                        statusElem.textContent = 'Online';
+                    }
                 });
                 
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     console.error(`Camera ${channel} HLS error:`, data);
                     const statusElem = document.getElementById(`camera-${channel}-status`);
-                    if (statusElem) statusElem.textContent = 'Error';
+                    if (statusElem) statusElem.textContent = 'Offline';
                     
                     if (data.fatal) {
                         switch (data.type) {
@@ -4509,9 +4516,19 @@ function initializeHLSPlayers() {
                 video.hlsInstance = hls;
             } else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
                 // Native HLS support (Safari)
-                video.src = `/camera/${channel}/stream`;
+                video.src = `/hls/camera${channel}/stream.m3u8`;
                 const statusElem = document.getElementById(`camera-${channel}-status`);
-                if (statusElem) statusElem.textContent = 'Connected';
+                if (statusElem) statusElem.textContent = 'Online';
+                
+                video.addEventListener('loadeddata', () => {
+                    const statusElem = document.getElementById(`camera-${channel}-status`);
+                    if (statusElem) statusElem.textContent = 'Online';
+                });
+                
+                video.addEventListener('error', () => {
+                    const statusElem = document.getElementById(`camera-${channel}-status`);
+                    if (statusElem) statusElem.textContent = 'Offline';
+                });
             }
         }, index * 2000); // 2 second delay between each camera
     });
@@ -4535,8 +4552,27 @@ function initializeSingleCamera(channel) {
             fragLoadingMaxRetry: 3,
             manifestLoadingMaxRetry: 3
         });
-        hls.loadSource(`/camera/${channel}/stream`);
+        
+        hls.loadSource(`/hls/camera${channel}/stream.m3u8`);
         hls.attachMedia(video);
+        
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            const statusElem = document.getElementById(`camera-${channel}-status`);
+            if (statusElem) statusElem.textContent = 'Online';
+        });
+        
+        hls.on(Hls.Events.FRAG_LOADED, () => {
+            const statusElem = document.getElementById(`camera-${channel}-status`);
+            if (statusElem && statusElem.textContent !== 'Online') {
+                statusElem.textContent = 'Online';
+            }
+        });
+        
+        hls.on(Hls.Events.ERROR, (event, data) => {
+            const statusElem = document.getElementById(`camera-${channel}-status`);
+            if (statusElem && data.fatal) statusElem.textContent = 'Offline';
+        });
+        
         video.hlsInstance = hls;
     }
 }
